@@ -7,6 +7,9 @@
 //
 // Additions Copyright (c) 2011 Archaeopteryx Software, Inc. d/b/a Wingware
 // ScintillaWidget.h - Qt widget that wraps ScintillaQt and provides events and scrolling
+//
+// Additions Copyright (c) 2020 Michael Neuroth
+// Scintilla platform layer for Qt QML/Quick
 
 
 #ifndef SCINTILLAEDITBASE_H
@@ -21,7 +24,12 @@
 #include "Platform.h"
 #include "Scintilla.h"
 
+#ifdef PLAT_QT_QML
+#include <QFont>
+#include <QQuickPaintedItem>
+#else
 #include <QAbstractScrollArea>
+#endif
 #include <QMimeData>
 #include <QTime>
 
@@ -46,11 +54,33 @@ class SurfaceImpl;
 #endif
 #endif
 
-class EXPORT_IMPORT_API ScintillaEditBase : public QAbstractScrollArea {
+// REMARK:
+// In Qt QML/Quick modus the scrollbar handling should be handled outside
+// the scintilla editor control, for example in a ScrolView component.
+// This is needed to optimize the user interaction on touch devices.
+// In this modus the scintilla editor control runs alway with a (maximal)
+// surface area to show the control completely. Updating the implicitSize
+// of the scintilla editor control is handled in the overloaded paint(.) method.
+class EXPORT_IMPORT_API ScintillaEditBase : public
+#ifdef PLAT_QT_QML
+    QQuickPaintedItem
+#else
+    QAbstractScrollArea
+#endif
+{
 	Q_OBJECT
 
+#ifdef PLAT_QT_QML
+    Q_PROPERTY(QString text READ getText WRITE setText)
+    Q_PROPERTY(QFont font READ getFont WRITE setFont)
+#endif
+
 public:
-	explicit ScintillaEditBase(QWidget *parent = 0);
+#ifdef PLAT_QT_QML
+    explicit ScintillaEditBase(QQuickItem/*QWidget*/ *parent = 0);
+#else
+    explicit ScintillaEditBase(QWidget *parent = 0);
+#endif
 	virtual ~ScintillaEditBase();
 
 	virtual sptr_t send(
@@ -123,26 +153,49 @@ signals:
 
 protected:
 	bool event(QEvent *event) override;
-	void paintEvent(QPaintEvent *event) override;
-	void wheelEvent(QWheelEvent *event) override;
+#ifdef PLAT_QT_QML
+    void paint(QPainter *painter) override;
+#else
+    void paintEvent(QPaintEvent *event) override;
+#endif
+    void wheelEvent(QWheelEvent *event) override;
 	void focusInEvent(QFocusEvent *event) override;
 	void focusOutEvent(QFocusEvent *event) override;
-	void resizeEvent(QResizeEvent *event) override;
+#ifdef PLAT_QT_QML
+    void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry) override;
+#else
+    void resizeEvent(QResizeEvent *event) override;
+#endif
 	void keyPressEvent(QKeyEvent *event) override;
 	void mousePressEvent(QMouseEvent *event) override;
 	void mouseReleaseEvent(QMouseEvent *event) override;
 	void mouseDoubleClickEvent(QMouseEvent *event) override;
 	void mouseMoveEvent(QMouseEvent *event) override;
-	void contextMenuEvent(QContextMenuEvent *event) override;
+#ifndef PLAT_QT_QML
+    // TODO: implement context menu for Qt QML/Quick
+    void contextMenuEvent(QContextMenuEvent *event) override;
+#endif
 	void dragEnterEvent(QDragEnterEvent *event) override;
 	void dragLeaveEvent(QDragLeaveEvent *event) override;
 	void dragMoveEvent(QDragMoveEvent *event) override;
 	void dropEvent(QDropEvent *event) override;
 	void inputMethodEvent(QInputMethodEvent *event) override;
 	QVariant inputMethodQuery(Qt::InputMethodQuery query) const override;
-	void scrollContentsBy(int, int) override {}
+#ifndef PLAT_QT_QML
+    void scrollContentsBy(int, int) override {}
+#endif
 
 private:
+#ifdef PLAT_QT_QML
+    QString getText() const;
+    void setText(const QString & txt);
+    QFont getFont() const { return aFont; }
+    void setFont(const QFont & newFont);
+    void setStylesFont(const QFont &f, int style);
+
+    QFont aFont;
+#endif
+
 	Scintilla::ScintillaQt *sqt;
 
 	QTime time;
