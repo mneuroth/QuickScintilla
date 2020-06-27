@@ -1,0 +1,1 @@
+# QuickScintilla    A port of the [scintilla editor control](https://www.scintilla.org/) to the Qt QML/Quick platform, which is optimized for touch devices.
