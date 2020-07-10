@@ -114,6 +114,7 @@ private:
 	bool ValidCodePage(int codePage) const override;
 
 private:
+    //void DebugOutput(int value) override;
 	void ScrollText(Sci::Line linesToMove) override;
 	void SetVerticalScrollPos() override;
 	void SetHorizontalScrollPos() override;

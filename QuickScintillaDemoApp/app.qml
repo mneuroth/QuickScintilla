@@ -79,6 +79,10 @@ ApplicationWindow {
         text: "Clear"
         onClicked: {
             myScintillaEditor.text = ""
+            lblFileName.text = "unknown.txt"
+            //for Tests only: Qt.inputMethod.show()
+            scrollView.focus = true
+            //myScintillaEditor.focus = true
         }
     }
 
@@ -91,7 +95,10 @@ ApplicationWindow {
         text: "Show text"
         onClicked: {
             infoDialog.text = myScintillaEditor.text
+            //for Tests only: infoDialog.text = " "+scrollView.contentItem
             infoDialog.open()
+            //for Tests only: readCurrentDoc("/sdcard/Texte/mgv_quick_qdebug.log")
+            /*for Tests only: */myScintillaEditor.text = applicationData.readLog()
         }
     }
 
@@ -129,8 +136,12 @@ ApplicationWindow {
             else {
                 readCurrentDoc(/*currentFile*/fileUrl)
             }
+            scrollView.focus = true
         }
-        onRejected: { console.log("Rejected") }
+        onRejected: {
+            console.log("Rejected")
+            scrollView.focus = true
+        }
     }
 
     MessageDialog {
@@ -140,17 +151,30 @@ ApplicationWindow {
         standardButtons: StandardButton.Ok
         onAccepted: {
             console.log("Close info dialog")
+            scrollView.focus = true
+            //myScintillaEditor.focus = true
         }
     }
 
+    function max(v1, v2) {
+        return v1 < v2 ? v2 : v1;
+    }
+
+    // Use Scrollview to handle ScrollBars for QuickScintilla control.
+    // Scrollbar uses Rectangle as flickable item which has the implicitSize of the QuickScintilla control
+    // (implicitSize is the maximun size needed to show the full content of the QuickScintilla control).
+    // The QuickScintilla controll will be placed at the currently visible viewport of the ScrollView.
     ScrollView {
         id: scrollView
         focus: true
         clip: true
+        //focusPolicy: Qt.StrongFocus
+
+        property alias myScintillaEditor: myScintillaEditor
+        //property Flickable flickableItem: flickableItem
 
         //anchors.fill: parent
         //anchors.centerIn: parent
-
         anchors.top: lblFileName.bottom
         anchors.right: parent.right
         anchors.bottom: parent.bottom
@@ -163,16 +187,114 @@ ApplicationWindow {
         ScrollBar.horizontal.policy: ScrollBar.AlwaysOn
         ScrollBar.vertical.policy: ScrollBar.AlwaysOn
 
-        ScintillaEditBase {
-            id: myScintillaEditor
+        // box needed to support ScrollView and simulate current maximum size of scintilla text control
+        // editor control will be placed in visible part of this rectangle
+        Rectangle {
+            id: editorFrame
+
             anchors.fill: parent
-            //implicitWidth: 1000
-            //implicitHeight: 3000
-            font.family: "Courier New"  //*/ "Hack"
-            font.pointSize: 12
-            focus: true
-            text: "Welcome scintilla in the Qt QML/Quick world !\nLine 2\nLine 3\nLine 4\nLine 5\nLine 6\nLine 7\nLine 8\nLine 9\nLine 10\nLine 11\nLine 12\nLine 13\nLine 14\nLine 15\nLine 16\nLine 17\nlast line is here!"
+
+            implicitWidth: myScintillaEditor.logicalWidth
+            implicitHeight: myScintillaEditor.logicalHeight
+
+            // the QuickScintilla control
+            ScintillaEditBase {
+                id: myScintillaEditor
+
+                width: scrollView.availableWidth //+ 2*myScintillaEditor.charHeight
+                height: scrollView.availableHeight //+ 2*myScintillaEditor.charWidth
+
+                // position of the QuickScintilla controll will be changed in response of signals from the ScrollView
+                x : 0
+                y : 0
+
+                Accessible.role: Accessible.EditableText
+
+                //implicitWidth: 1600//1000
+                //implicitHeight: 1800//3000
+                font.family: "Courier New"  //*/ "Hack"
+                font.pointSize: 18
+                focus: true
+                text: "Welcome scintilla in the Qt QML/Quick world !\nLine 2\nLine 3\nLine 4\nLine 5\nLine 6\nLine 7\nLine 8\nLine 9\nLine 10\nLine 11\nLine 12\nLine 13\nLine 14\nLine 15\nLine 16\nLine 17\nlast line is here!\n"+parent.x+ " "+parent.y+" "+x+" "+y
+            }
         }
+
+        Connections {
+            // https://stackoverflow.com/questions/30359262/how-to-scroll-qml-scrollview-to-center
+            target: scrollView.contentItem //.flickableItem //.ScrollBar.vertial
+
+            onContentXChanged: {
+                var delta = scrollView.contentItem.contentX - myScintillaEditor.x
+                var deltaInColumns = parseInt(delta / myScintillaEditor.charWidth,10)
+                if(delta > myScintillaEditor.charWidth) {
+                    // disable repaint: https://stackoverflow.com/questions/46095768/how-to-disable-update-on-a-qquickitem
+                    myScintillaEditor.enableUpdate(false);
+                    myScintillaEditor.x = myScintillaEditor.x + deltaInColumns*myScintillaEditor.charWidth    // TODO --> bewirkt geometry changed !!!
+                    myScintillaEditor.scrollColumn(deltaInColumns)
+                    myScintillaEditor.enableUpdate(true)
+                }
+                else if(-deltaInColumns > myScintillaEditor.charWidth) {
+                    myScintillaEditor.enableUpdate(false);
+                    myScintillaEditor.x = myScintillaEditor.x + deltaInColumns*myScintillaEditor.charWidth      // deltaInColumns is < 0
+                    if(myScintillaEditor.x < 0)
+                    {
+                        myScintillaEditor.x = 0
+                    }
+                    myScintillaEditor.scrollColumn(deltaInColumns)   // deltaInColumns is < 0
+                    myScintillaEditor.enableUpdate(true)
+                }
+            }
+            onContentYChanged: {
+                var delta = scrollView.contentItem.contentY - myScintillaEditor.y
+                var deltaInLines = parseInt(delta / myScintillaEditor.charHeight,10)
+                if(delta > myScintillaEditor.charHeight) {
+                    // disable repaint: https://stackoverflow.com/questions/46095768/how-to-disable-update-on-a-qquickitem
+                    myScintillaEditor.enableUpdate(false);
+                    myScintillaEditor.y = myScintillaEditor.y + deltaInLines*myScintillaEditor.charHeight    // TODO --> bewirkt geometry changed !!!
+                    myScintillaEditor.scrollRow(deltaInLines)
+                    myScintillaEditor.enableUpdate(true)
+                }
+                else if(-delta > myScintillaEditor.charHeight) {
+                    myScintillaEditor.enableUpdate(false);
+                    myScintillaEditor.y = myScintillaEditor.y + deltaInLines*myScintillaEditor.charHeight
+                    if(myScintillaEditor.y < 0)
+                    {
+                        myScintillaEditor.y = 0
+                    }
+                    myScintillaEditor.scrollRow(deltaInLines) // -1 * -1
+                    myScintillaEditor.enableUpdate(true)
+                }
+            }
+        }
+
+        /* For tests with Flickable:
+
+        SimpleScrollBar {
+            id: verticalScrollBar
+            width: 12
+            visible: true
+            height: scrollView.height-12
+            anchors.right: parent.right
+            opacity: 1
+            orientation: Qt.Vertical
+            position: myScintillaEditor.firstVisibleLine/myScintillaEditor.totalLines
+            pageSize: myScintillaEditor.height/max(myScintillaEditor.logicalHeight,myScintillaEditor.height) // 0.5 //view.visibleArea.heightRatio
+        }
+
+        SimpleScrollBar {
+            id: horizontalScrollBar
+            width: scrollView.width-12
+            height: 12//+50
+            //scrollView.height
+            visible: true
+            //anchors.bottom: parent.bottom+50
+            y: scrollView.height-12 //-50
+            opacity: 1
+            orientation: Qt.Horizontal
+            position: myScintillaEditor.firstVisibleColumn/myScintillaEditor.totalColumns
+            pageSize: myScintillaEditor.width/max(myScintillaEditor.logicalWidth,myScintillaEditor.width) //0.25 //myScintillaEditor.widthRatio
+        }
+        */
    }
 
 }

@@ -44,14 +44,24 @@
 
 using namespace Scintilla;
 
+#include <QDebug>
+
 ScintillaEditBase::ScintillaEditBase(QQuickItem/*QWidget*/ *parent)
-: QQuickPaintedItem(parent) // QAbstractScrollArea(parent)
+#ifdef PLAT_QT_QML
+: QQuickPaintedItem(parent)
+#else
+: QAbstractScrollArea(parent)
+#endif
+, enableUpdateFlag(true), logicalWidth(0), logicalHeight(0)
+#ifdef PLAT_QT_QML
+, dataInputMethodHints(Qt::ImhNone)
+#endif
 , sqt(0), preeditPos(-1), wheelDelta(0)
 {
 #ifdef PLAT_QT_QML
     setAcceptedMouseButtons(Qt::AllButtons);
     setAcceptTouchEvents(true);
-    grabMouse();
+    //grabMouse();
 #endif
 
 	sqt = new ScintillaQt(this);
@@ -81,6 +91,7 @@ ScintillaEditBase::ScintillaEditBase(QQuickItem/*QWidget*/ *parent)
 
 	// Connect scroll bars.
 #ifndef PLAT_QT_QML
+    // scrollbars are handled by the QML ScrollView outside this class
     connect(verticalScrollBar(), SIGNAL(valueChanged(int)),
             this, SLOT(scrollVertical(int)));
     connect(horizontalScrollBar(), SIGNAL(valueChanged(int)),
@@ -105,6 +116,9 @@ ScintillaEditBase::ScintillaEditBase(QQuickItem/*QWidget*/ *parent)
 
 	connect(sqt, SIGNAL(aboutToCopy(QMimeData *)),
 	        this, SIGNAL(aboutToCopy(QMimeData *)));
+
+    // TODO: performance optimizations... ?
+    //setRenderTarget(QQuickPaintedItem::FramebufferObject);
 }
 
 ScintillaEditBase::~ScintillaEditBase() {}
@@ -123,6 +137,39 @@ sptr_t ScintillaEditBase::sends(
     const char *s) const
 {
 	return sqt->WndProc(iMessage, wParam, (sptr_t)s);
+}
+
+void ScintillaEditBase::scrollRow(int deltaLines)
+{
+    int currentLine = sqt->TopLineOfMain();
+    sqt->SetTopLine(currentLine + deltaLines);
+    //scrollVertical(deltaLines);
+}
+
+void ScintillaEditBase::scrollColumn(int deltaColumns)
+{
+    int currentColumnInPixel = send(SCI_GETXOFFSET);
+    int newValue = currentColumnInPixel + deltaColumns * getCharWidth();
+    if(newValue < 0)
+    {
+        newValue = 0;
+    }
+    send(SCI_SETXOFFSET,newValue);
+    //scrollHorizontal(deltaRows);
+}
+
+void ScintillaEditBase::debug()
+{
+    qDebug() << "Debug: " << send(SCI_GETCURRENTPOS ) << endl;
+}
+
+void ScintillaEditBase::enableUpdate(bool enable)
+{
+    enableUpdateFlag = enable;
+    if( enableUpdateFlag )
+    {
+        update();
+    }
 }
 
 void ScintillaEditBase::scrollHorizontal(int value)
@@ -172,19 +219,8 @@ bool ScintillaEditBase::event(QEvent *event)
 
 void ScintillaEditBase::paint(QPainter *painter)
 {
+    //sqt->PartialPaintQml(PRectFromQRect(/*boundingRect().toRect()*/painter->clipRegion().boundingRect()), painter);
     sqt->PartialPaintQml(PRectFromQRect(boundingRect().toRect()), painter);
-
-    // IMPORTANT:
-    // Disable handling of scrollbars in scintilla editor control for better touch interaction
-    //
-    // Calculate the current (maximum) size of the scintilla control to show the full content
-    // and set this maximum size as implicit size to support the ScrolView component for nice touch interaction
-    int lineCount = send(SCI_GETLINECOUNT);
-    int textWidth = send(SCI_GETSCROLLWIDTH);
-    int textHeight = send(SCI_TEXTHEIGHT);
-    int newHeight = lineCount * textHeight;
-    setImplicitHeight(newHeight);
-    setImplicitWidth(textWidth);
 }
 
 #else
@@ -198,7 +234,7 @@ void ScintillaEditBase::paintEvent(QPaintEvent *event)
 
 void ScintillaEditBase::wheelEvent(QWheelEvent *event)
 {
-	if (event->orientation() == Qt::Horizontal) {
+    if (event->orientation() == Qt::Horizontal) {
 #ifndef PLAT_QT_QML
         if (horizontalScrollBarPolicy() == Qt::ScrollBarAlwaysOff)
             event->ignore();
@@ -222,9 +258,15 @@ void ScintillaEditBase::wheelEvent(QWheelEvent *event)
                 event->ignore();
             } else {
 #endif
-				// Scroll
-                QQuickPaintedItem::wheelEvent(event);
-#ifndef PLAT_QT_QML
+#ifdef PLAT_QT_QML
+                // Scroll
+                //QQuickPaintedItem::wheelEvent(event);
+                if (event->delta() > 0) {
+                    sqt->KeyCommand(SCI_LINESCROLLUP);
+                } else {
+                    sqt->KeyCommand(SCI_LINESCROLLDOWN);
+                }
+#else
                 QAbstractScrollArea::wheelEvent(event);
             }
 #endif
@@ -258,10 +300,15 @@ void ScintillaEditBase::focusOutEvent(QFocusEvent *event)
 
 void ScintillaEditBase::geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry)
 {
-    sqt->ChangeSize();
-    emit resized();
+    // trigger resize handling only if the size of the control has changed
+    // no update is needed for a position change
+    if(newGeometry.width() != oldGeometry.width() || newGeometry.height() != oldGeometry.height() )
+    {
+        sqt->ChangeSize();
+        emit resized();
 
-    QQuickPaintedItem::geometryChanged(newGeometry, oldGeometry);
+        QQuickPaintedItem::geometryChanged(newGeometry, oldGeometry);
+    }
 }
 
 #else
@@ -396,7 +443,7 @@ void ScintillaEditBase::mousePressEvent(QMouseEvent *event)
 #endif
 
 		sqt->ButtonDownWithModifiers(pos, time.elapsed(), ScintillaQt::ModifierFlags(shift, ctrl, alt));
-	}
+    }
 
 	if (event->button() == Qt::RightButton) {
 		sqt->RightButtonDownWithModifiers(pos, time.elapsed(), ModifiersOfKeyboard());
@@ -429,7 +476,7 @@ void ScintillaEditBase::mouseDoubleClickEvent(QMouseEvent *event)
 
 void ScintillaEditBase::mouseMoveEvent(QMouseEvent *event)
 {
-	Point pos = PointFromQPoint(event->pos());
+    Point pos = PointFromQPoint(event->pos());
 
 	bool shift = QApplication::keyboardModifiers() & Qt::ShiftModifier;
 	bool ctrl  = QApplication::keyboardModifiers() & Qt::ControlModifier;
@@ -698,10 +745,28 @@ void ScintillaEditBase::inputMethodEvent(QInputMethodEvent *event)
 
 QVariant ScintillaEditBase::inputMethodQuery(Qt::InputMethodQuery query) const
 {
-	int pos = send(SCI_GETCURRENTPOS);
+    int pos = send(SCI_GETCURRENTPOS);
 	int line = send(SCI_LINEFROMPOSITION, pos);
 
 	switch (query) {
+#ifdef PLAT_QT_QML
+        case Qt::ImEnabled:
+            return QVariant((bool)(flags() & ItemAcceptsInputMethod));
+        case Qt::ImHints:
+            return QVariant((int)inputMethodHints());
+        case Qt::ImInputItemClipRectangle:
+            return QQuickItem::inputMethodQuery(query);
+   /*
+        defalut:
+        {
+            if (query == Qt::ImCursorPosition && !argument.isNull())
+                argument = QVariant(argument.toPointF() - QPointF(d->xoff, d->yoff));
+            QVariant v = d->control->inputMethodQuery(property, argument);
+            if (query == Qt::ImCursorRectangle || query == Qt::ImAnchorRectangle)
+                return QVariant(v.toRectF().translated(d->xoff, d->yoff));
+        }
+    */
+#endif
 		case Qt::ImMicroFocus:
 		{
 			int startPos = (preeditPos >= 0) ? preeditPos : pos;
@@ -760,6 +825,52 @@ QVariant ScintillaEditBase::inputMethodQuery(Qt::InputMethodQuery query) const
 	}
 }
 
+void ScintillaEditBase::touchEvent(QTouchEvent *event)
+{
+    if( event->touchPointStates() == Qt::TouchPointPressed && event->touchPoints().count()>0 )
+    {
+        QTouchEvent::TouchPoint point = event->touchPoints().first();
+        mousePressedPoint = point.pos().toPoint();
+        mouseMoved = false;
+        mouseDeltaLineMove = 0;
+        Point scintillaPoint = PointFromQPoint(mousePressedPoint);
+
+        //sqt->ButtonDownWithModifiers(scintillaPoint, time.elapsed(), 0);       // --> enables mouse selection modus
+        Sci::Position pos = sqt->PositionFromLocation(scintillaPoint);
+        sqt->MovePositionTo(pos);
+    }
+    else if( event->touchPointStates() == Qt::TouchPointReleased && event->touchPoints().count()>0 )
+    {
+        QTouchEvent::TouchPoint point = event->touchPoints().first();
+        Point pos = PointFromQPoint(mouseMoved ? mousePressedPoint : point.pos().toPoint());
+
+        // TODO: if moved --> use old pos from press ?
+        //sqt->ButtonUpWithModifiers(pos, time.elapsed(), 0);
+
+#ifdef Q_OS_ANDROID
+        // Android: trigger software keyboard for inputs:
+        // https://stackoverflow.com/questions/39436518/how-to-get-the-android-keyboard-to-appear-when-using-qt-for-android
+        // https://stackoverflow.com/questions/5724811/how-to-show-the-keyboard-on-qt
+
+        // Check if not in readonly modus --> pdoc->IsReadOnly()
+        if( !sqt->pdoc->IsReadOnly() )
+        {
+            // QML: Qt.inputMethod.show();
+            QInputMethod *keyboard = qGuiApp->inputMethod();
+            //QInputMethod *keyboard = QGuiApplication::inputMethod();
+            keyboard->show();
+        }
+#endif
+    }
+    else if(event->touchPointStates() == Qt::TouchPointMoved && event->touchPoints().count()>0)
+    {
+    }
+    else
+    {
+        QQuickPaintedItem::touchEvent(event);
+    }
+}
+
 void ScintillaEditBase::notifyParent(SCNotification scn)
 {
     emit notify(&scn);
@@ -793,8 +904,11 @@ void ScintillaEditBase::notifyParent(SCNotification scn)
 			break;
 
 		case SCN_UPDATEUI:
+#ifdef PLAT_QT_QML
+            UpdateQuickView();
+#endif
             emit updateUi(scn.updated);
-			break;
+            break;
 
 		case SCN_MODIFIED:
 		{
@@ -815,7 +929,7 @@ void ScintillaEditBase::notifyParent(SCNotification scn)
 			emit modified(scn.modificationType, scn.position, scn.length,
 			              scn.linesAdded, bytes, scn.line,
 			              scn.foldLevelNow, scn.foldLevelPrev);
-			break;
+            break;
 		}
 
 		case SCN_MACRORECORD:
@@ -917,6 +1031,7 @@ void ScintillaEditBase::setText(const QString & txt)
 {
     send(SCI_SETTEXT, 0, (sptr_t)txt.toUtf8().constData());
     send(SCI_EMPTYUNDOBUFFER);
+    setFocus(true);
 }
 
 void ScintillaEditBase::setFont(const QFont & newFont)
@@ -926,6 +1041,98 @@ void ScintillaEditBase::setFont(const QFont & newFont)
 
     // Set the font for a style.
     setStylesFont(newFont, 0);
+}
+
+int ScintillaEditBase::getLogicalWidth() const
+{
+    return logicalWidth;
+}
+
+int ScintillaEditBase::getLogicalHeight() const
+{
+    return logicalHeight;
+}
+
+int ScintillaEditBase::getCharHeight() const
+{
+    int charHeight = send(SCI_TEXTHEIGHT);
+    return charHeight;
+}
+
+int ScintillaEditBase::getCharWidth() const
+{
+    char buf[2];
+    strcpy(buf,"X");
+    int charWidth = send(SCI_TEXTWIDTH,0,(sptr_t)buf);
+    return charWidth;
+}
+
+int ScintillaEditBase::getFirstVisibleLine() const
+{
+    int firstLine = send(SCI_GETFIRSTVISIBLELINE);
+    return firstLine;
+}
+
+void ScintillaEditBase::setFirstVisisbleLine(int lineNo)
+{
+    send(SCI_SETFIRSTVISIBLELINE, lineNo);
+}
+
+int ScintillaEditBase::getTotalLines() const
+{
+    int lineCount = send(SCI_GETLINECOUNT);
+    return lineCount;
+}
+
+int ScintillaEditBase::getFirstVisibleColumn() const
+{
+    int offset = send(SCI_GETXOFFSET);
+    return offset;
+}
+
+int ScintillaEditBase::getTotalColumns() const
+{
+    int columnCount = send(SCI_GETSCROLLWIDTH);
+    return columnCount;
+}
+
+Qt::InputMethodHints ScintillaEditBase::inputMethodHints() const
+{
+    return dataInputMethodHints | Qt::ImhNoAutoUppercase | Qt::ImhNoPredictiveText | Qt::ImhMultiLine;
+}
+
+void ScintillaEditBase::setInputMethodHints(Qt::InputMethodHints hints)
+{
+    if (hints == dataInputMethodHints)
+        return;
+
+    dataInputMethodHints = hints;
+    updateInputMethod(Qt::ImHints);
+    emit inputMethodHintsChanged();
+}
+
+void ScintillaEditBase::UpdateQuickView()
+{
+    int lineCount = send(SCI_GETLINECOUNT);
+    int textWidth = send(SCI_GETSCROLLWIDTH);
+    int lineHeight = send(SCI_TEXTHEIGHT);
+    int textHeight = lineCount * lineHeight;
+
+    bool widthChanged = logicalWidth != textWidth;
+    bool heightChanged = logicalHeight != textHeight;
+    if( widthChanged)
+    {
+        logicalWidth = textWidth;
+        emit logicalWidthChanged();
+    }
+    if( heightChanged )
+    {
+        logicalHeight = textHeight;
+        emit logicalHeightChanged();
+    }
+
+    emit firstVisibleLineChanged();
+    emit firstVisibleColumnChanged();
 }
 
 // taken from QScintilla

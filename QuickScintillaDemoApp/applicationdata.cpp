@@ -56,7 +56,8 @@ QString ApplicationData::readFileContent(const QString & fileName) const
 
     file.close();
 
-    return text;}
+    return text;
+}
 
 bool ApplicationData::writeFileContent(const QString & fileName, const QString & content)
 {
@@ -82,4 +83,9 @@ bool ApplicationData::deleteFile(const QString & fileName)
     QFile aDir(fileName);
     bool ok = aDir.remove();
     return ok;
+}
+
+QString ApplicationData::readLog() const
+{
+    return readFileContent(LOG_NAME);
 }

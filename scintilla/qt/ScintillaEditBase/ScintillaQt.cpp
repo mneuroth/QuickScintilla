@@ -272,7 +272,12 @@ void ScintillaQt::ScrollText(Sci::Line linesToMove)
     scrollArea->viewport()->scroll(0, dy);
 #endif
 }
-
+/*
+void ScintillaQt::DebugOutput(int value)
+{
+    qDebug() << "DBG out " << value << endl;
+}
+*/
 void ScintillaQt::SetVerticalScrollPos()
 {
 #ifndef PLAT_QT_QML

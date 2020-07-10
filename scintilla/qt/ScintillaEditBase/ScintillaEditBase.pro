@@ -114,7 +114,7 @@ HEADERS  += \
 
 OTHER_FILES +=
 
-INCLUDEPATH += ../../include ../../src ../../lexlib
+INCLUDEPATH += ../../include ../../src ../../lexlib ../../lexilla/src
 
 DEFINES += SCINTILLA_QT_QML=1 MAKING_LIBRARY=1 SCI_LEXER=1 _CRT_SECURE_NO_DEPRECATE=1
 CONFIG(release, debug|release) {

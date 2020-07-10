@@ -73,6 +73,16 @@ class EXPORT_IMPORT_API ScintillaEditBase : public
 #ifdef PLAT_QT_QML
     Q_PROPERTY(QString text READ getText WRITE setText)
     Q_PROPERTY(QFont font READ getFont WRITE setFont)
+    Q_PROPERTY(int logicalWidth READ getLogicalWidth NOTIFY logicalWidthChanged)
+    Q_PROPERTY(int logicalHeight READ getLogicalHeight NOTIFY logicalHeightChanged)
+    Q_PROPERTY(int charHeight READ getCharHeight NOTIFY charHeightChanged)
+    Q_PROPERTY(int charWidth READ getCharWidth NOTIFY charWidthChanged)
+    Q_PROPERTY(int totalLines READ getTotalLines NOTIFY totalLinesChanged)
+    Q_PROPERTY(int totalColumns READ getTotalColumns NOTIFY totalColumnsChanged)
+    Q_PROPERTY(int firstVisibleLine READ getFirstVisibleLine WRITE setFirstVisisbleLine NOTIFY firstVisibleLineChanged)
+    Q_PROPERTY(int firstVisibleColumn READ getFirstVisibleColumn NOTIFY firstVisibleColumnChanged)
+    Q_PROPERTY(Qt::InputMethodHints inputMethodHints READ inputMethodHints WRITE setInputMethodHints NOTIFY inputMethodHintsChanged)
+    //QML_ELEMENT
 #endif
 
 public:
@@ -92,6 +102,11 @@ public:
 		unsigned int iMessage,
 		uptr_t wParam = 0,
 		const char *s = 0) const;
+
+    Q_INVOKABLE void scrollRow(int deltaLines);
+    Q_INVOKABLE void scrollColumn(int deltaColumns);
+    Q_INVOKABLE void enableUpdate(bool enable);
+    Q_INVOKABLE void debug();
 
 public slots:
 	// Scroll events coming from GUI to be sent to Scintilla.
@@ -150,6 +165,17 @@ signals:
 	void buttonReleased(QMouseEvent *event);
 	void keyPressed(QKeyEvent *event);
 	void resized();
+#ifdef PLAT_QT_QML
+    void logicalWidthChanged();
+    void logicalHeightChanged();
+    void charHeightChanged();
+    void charWidthChanged();
+    void totalLinesChanged();
+    void firstVisibleLineChanged();
+    void firstVisibleColumnChanged();
+    void totalColumnsChanged();
+    void inputMethodHintsChanged();
+#endif
 
 protected:
 	bool event(QEvent *event) override;
@@ -157,7 +183,7 @@ protected:
     void paint(QPainter *painter) override;
 #else
     void paintEvent(QPaintEvent *event) override;
-#endif
+#endif    
     void wheelEvent(QWheelEvent *event) override;
 	void focusInEvent(QFocusEvent *event) override;
 	void focusOutEvent(QFocusEvent *event) override;
@@ -183,6 +209,8 @@ protected:
 	QVariant inputMethodQuery(Qt::InputMethodQuery query) const override;
 #ifndef PLAT_QT_QML
     void scrollContentsBy(int, int) override {}
+#else
+    void touchEvent(QTouchEvent *event) override;
 #endif
 
 private:
@@ -192,7 +220,27 @@ private:
     QFont getFont() const { return aFont; }
     void setFont(const QFont & newFont);
     void setStylesFont(const QFont &f, int style);
+    int getLogicalWidth() const;
+    int getLogicalHeight() const;
+    int getCharHeight() const;
+    int getCharWidth() const;
+    int getFirstVisibleLine() const;
+    void setFirstVisisbleLine(int lineNo);
+    int getTotalLines() const;
+    int getFirstVisibleColumn() const;
+    int getTotalColumns() const;
+    Qt::InputMethodHints inputMethodHints() const;
+    void setInputMethodHints(Qt::InputMethodHints hints);
 
+    void UpdateQuickView();
+
+    Qt::InputMethodHints dataInputMethodHints;
+    QPoint mousePressedPoint;
+    bool enableUpdateFlag;
+    bool mouseMoved;
+    int mouseDeltaLineMove;
+    int logicalWidth;
+    int logicalHeight;
     QFont aFont;
 #endif
 
