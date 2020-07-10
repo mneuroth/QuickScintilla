@@ -79,6 +79,8 @@ class EXPORT_IMPORT_API ScintillaEditBase : public
     Q_PROPERTY(int charWidth READ getCharWidth NOTIFY charWidthChanged)
     Q_PROPERTY(int totalLines READ getTotalLines NOTIFY totalLinesChanged)
     Q_PROPERTY(int totalColumns READ getTotalColumns NOTIFY totalColumnsChanged)
+    Q_PROPERTY(int visibleLines READ getVisibleLines NOTIFY visibleLinesChanged)
+    Q_PROPERTY(int visibleColumns READ getVisibleColumns NOTIFY visibleColumnsChanged)
     Q_PROPERTY(int firstVisibleLine READ getFirstVisibleLine WRITE setFirstVisisbleLine NOTIFY firstVisibleLineChanged)
     Q_PROPERTY(int firstVisibleColumn READ getFirstVisibleColumn NOTIFY firstVisibleColumnChanged)
     Q_PROPERTY(Qt::InputMethodHints inputMethodHints READ inputMethodHints WRITE setInputMethodHints NOTIFY inputMethodHintsChanged)
@@ -174,6 +176,8 @@ signals:
     void firstVisibleLineChanged();
     void firstVisibleColumnChanged();
     void totalColumnsChanged();
+    void visibleLinesChanged();
+    void visibleColumnsChanged();
     void inputMethodHintsChanged();
 #endif
 
@@ -229,6 +233,8 @@ private:
     int getTotalLines() const;
     int getFirstVisibleColumn() const;
     int getTotalColumns() const;
+    int getVisibleLines() const;
+    int getVisibleColumns() const;
     Qt::InputMethodHints inputMethodHints() const;
     void setInputMethodHints(Qt::InputMethodHints hints);
 

@@ -143,7 +143,7 @@ void ScintillaEditBase::scrollRow(int deltaLines)
 {
     int currentLine = sqt->TopLineOfMain();
     sqt->SetTopLine(currentLine + deltaLines);
-    //scrollVertical(deltaLines);
+    //scrollVertical(currentLine + deltaLines);       // also ok !
 }
 
 void ScintillaEditBase::scrollColumn(int deltaColumns)
@@ -154,8 +154,8 @@ void ScintillaEditBase::scrollColumn(int deltaColumns)
     {
         newValue = 0;
     }
-    send(SCI_SETXOFFSET,newValue);
-    //scrollHorizontal(deltaRows);
+//    send(SCI_SETXOFFSET,newValue);
+    scrollHorizontal(newValue);
 }
 
 void ScintillaEditBase::debug()
@@ -1092,8 +1092,21 @@ int ScintillaEditBase::getFirstVisibleColumn() const
 
 int ScintillaEditBase::getTotalColumns() const
 {
-    int columnCount = send(SCI_GETSCROLLWIDTH);
+    int columnCount = send(SCI_GETSCROLLWIDTH)/getCharWidth();
     return columnCount;
+}
+
+int ScintillaEditBase::getVisibleLines() const
+{
+    int count = send(SCI_LINESONSCREEN);
+    return count;
+}
+
+int ScintillaEditBase::getVisibleColumns() const
+{
+    int visibleWidth = sqt->GetTextRectangle().Width();
+    int count = visibleWidth / getCharWidth();
+    return count;
 }
 
 Qt::InputMethodHints ScintillaEditBase::inputMethodHints() const

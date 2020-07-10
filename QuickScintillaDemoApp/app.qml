@@ -34,7 +34,7 @@ ApplicationWindow {
         // then read new document
         var urlFileName = buildValidUrl(url)
         lblFileName.text = urlFileName
-        myScintillaEditor.text = applicationData.readFileContent(urlFileName)
+        quickScintillaEditor.text = applicationData.readFileContent(urlFileName)
     }
 
     Button {
@@ -78,11 +78,11 @@ ApplicationWindow {
         anchors.leftMargin: 5
         text: "Clear"
         onClicked: {
-            myScintillaEditor.text = ""
+            quickScintillaEditor.text = ""
             lblFileName.text = "unknown.txt"
             //for Tests only: Qt.inputMethod.show()
             scrollView.focus = true
-            //myScintillaEditor.focus = true
+            //quickScintillaEditor.focus = true
         }
     }
 
@@ -94,11 +94,11 @@ ApplicationWindow {
         anchors.leftMargin: 5
         text: "Show text"
         onClicked: {
-            infoDialog.text = myScintillaEditor.text
+            infoDialog.text = quickScintillaEditor.text
             //for Tests only: infoDialog.text = " "+scrollView.contentItem
             infoDialog.open()
             //for Tests only: readCurrentDoc("/sdcard/Texte/mgv_quick_qdebug.log")
-            /*for Tests only: */myScintillaEditor.text = applicationData.readLog()
+            /*for Tests only: */quickScintillaEditor.text = applicationData.readLog()
         }
     }
 
@@ -131,7 +131,7 @@ ApplicationWindow {
         onAccepted: {
             console.log("Accepted: " + /*currentFile*/fileUrl+" "+fileDialog.openMode)
             /*if(fileDialog.fileMode === FileDialog.SaveFile)*/if(!fileDialog.openMode) {
-                var ok = applicationData.writeFileContent(/*currentFile*/fileUrl, myScintillaEditor.text)
+                var ok = applicationData.writeFileContent(/*currentFile*/fileUrl, quickScintillaEditor.text)
             }
             else {
                 readCurrentDoc(/*currentFile*/fileUrl)
@@ -152,7 +152,7 @@ ApplicationWindow {
         onAccepted: {
             console.log("Close info dialog")
             scrollView.focus = true
-            //myScintillaEditor.focus = true
+            //quickScintillaEditor.focus = true
         }
     }
 
@@ -170,8 +170,10 @@ ApplicationWindow {
         clip: true
         //focusPolicy: Qt.StrongFocus
 
-        property alias myScintillaEditor: myScintillaEditor
+        property alias quickScintillaEditor: quickScintillaEditor
         //property Flickable flickableItem: flickableItem
+        //property alias vScrollBar: ScrollBar.vertical
+        property bool actionFromKeyboard: false
 
         //anchors.fill: parent
         //anchors.centerIn: parent
@@ -194,15 +196,15 @@ ApplicationWindow {
 
             anchors.fill: parent
 
-            implicitWidth: myScintillaEditor.logicalWidth
-            implicitHeight: myScintillaEditor.logicalHeight
+            implicitWidth: quickScintillaEditor.logicalWidth
+            implicitHeight: quickScintillaEditor.logicalHeight
 
             // the QuickScintilla control
             ScintillaEditBase {
-                id: myScintillaEditor
+                id: quickScintillaEditor
 
-                width: scrollView.availableWidth //+ 2*myScintillaEditor.charHeight
-                height: scrollView.availableHeight //+ 2*myScintillaEditor.charWidth
+                width: scrollView.availableWidth //+ 2*quickScintillaEditor.charHeight
+                height: scrollView.availableHeight //+ 2*quickScintillaEditor.charWidth
 
                 // position of the QuickScintilla controll will be changed in response of signals from the ScrollView
                 x : 0
@@ -224,46 +226,75 @@ ApplicationWindow {
             target: scrollView.contentItem //.flickableItem //.ScrollBar.vertial
 
             onContentXChanged: {
-                var delta = scrollView.contentItem.contentX - myScintillaEditor.x
-                var deltaInColumns = parseInt(delta / myScintillaEditor.charWidth,10)
-                if(delta > myScintillaEditor.charWidth) {
+                console.log("xchanged")
+                var delta = scrollView.contentItem.contentX - quickScintillaEditor.x
+                var deltaInColumns = parseInt(delta / quickScintillaEditor.charWidth,10)
+                if(delta > quickScintillaEditor.charWidth) {
+                    console.log("p1")
                     // disable repaint: https://stackoverflow.com/questions/46095768/how-to-disable-update-on-a-qquickitem
-                    myScintillaEditor.enableUpdate(false);
-                    myScintillaEditor.x = myScintillaEditor.x + deltaInColumns*myScintillaEditor.charWidth    // TODO --> bewirkt geometry changed !!!
-                    myScintillaEditor.scrollColumn(deltaInColumns)
-                    myScintillaEditor.enableUpdate(true)
+                    quickScintillaEditor.enableUpdate(false);
+                    quickScintillaEditor.x = quickScintillaEditor.x + deltaInColumns*quickScintillaEditor.charWidth    // TODO --> bewirkt geometry changed !!!
+                    quickScintillaEditor.scrollColumn(deltaInColumns)
+                    quickScintillaEditor.enableUpdate(true)
                 }
-                else if(-deltaInColumns > myScintillaEditor.charWidth) {
-                    myScintillaEditor.enableUpdate(false);
-                    myScintillaEditor.x = myScintillaEditor.x + deltaInColumns*myScintillaEditor.charWidth      // deltaInColumns is < 0
-                    if(myScintillaEditor.x < 0)
+                else if(-deltaInColumns > quickScintillaEditor.charWidth) {
+                    console.log("p2")
+                    quickScintillaEditor.enableUpdate(false);
+                    quickScintillaEditor.x = quickScintillaEditor.x + deltaInColumns*quickScintillaEditor.charWidth      // deltaInColumns is < 0
+                    if(quickScintillaEditor.x < 0)
                     {
-                        myScintillaEditor.x = 0
+                        quickScintillaEditor.x = 0
                     }
-                    myScintillaEditor.scrollColumn(deltaInColumns)   // deltaInColumns is < 0
-                    myScintillaEditor.enableUpdate(true)
+                    quickScintillaEditor.scrollColumn(deltaInColumns)   // deltaInColumns is < 0
+                    quickScintillaEditor.enableUpdate(true)
                 }
             }
             onContentYChanged: {
-                var delta = scrollView.contentItem.contentY - myScintillaEditor.y
-                var deltaInLines = parseInt(delta / myScintillaEditor.charHeight,10)
-                if(delta > myScintillaEditor.charHeight) {
+                console.log("YCHANGED")
+                var delta = scrollView.contentItem.contentY - quickScintillaEditor.y
+                var deltaInLines = parseInt(delta / quickScintillaEditor.charHeight,10)
+                if(delta > quickScintillaEditor.charHeight) {
+                    console.log("P1")
                     // disable repaint: https://stackoverflow.com/questions/46095768/how-to-disable-update-on-a-qquickitem
-                    myScintillaEditor.enableUpdate(false);
-                    myScintillaEditor.y = myScintillaEditor.y + deltaInLines*myScintillaEditor.charHeight    // TODO --> bewirkt geometry changed !!!
-                    myScintillaEditor.scrollRow(deltaInLines)
-                    myScintillaEditor.enableUpdate(true)
+                    quickScintillaEditor.enableUpdate(false);
+                    quickScintillaEditor.y = quickScintillaEditor.y + deltaInLines*quickScintillaEditor.charHeight    // TODO --> bewirkt geometry changed !!!
+                    quickScintillaEditor.scrollRow(deltaInLines)
+                    quickScintillaEditor.enableUpdate(true)
                 }
-                else if(-delta > myScintillaEditor.charHeight) {
-                    myScintillaEditor.enableUpdate(false);
-                    myScintillaEditor.y = myScintillaEditor.y + deltaInLines*myScintillaEditor.charHeight
-                    if(myScintillaEditor.y < 0)
+                else if(-delta > quickScintillaEditor.charHeight) {
+                    console.log("P2")
+                    quickScintillaEditor.enableUpdate(false);
+                    quickScintillaEditor.y = quickScintillaEditor.y + deltaInLines*quickScintillaEditor.charHeight
+                    if(quickScintillaEditor.y < 0)
                     {
-                        myScintillaEditor.y = 0
+                        quickScintillaEditor.y = 0
                     }
-                    myScintillaEditor.scrollRow(deltaInLines) // -1 * -1
-                    myScintillaEditor.enableUpdate(true)
+                    quickScintillaEditor.scrollRow(deltaInLines) // -1 * -1
+                    quickScintillaEditor.enableUpdate(true)
                 }
+            }
+        }
+
+        Connections {
+            target: quickScintillaEditor
+
+            onHorizontalScrolled: {
+                var v = value/quickScintillaEditor.charWidth/quickScintillaEditor.totalColumns
+                console.log("HSCROLL "+value+" new="+v)
+                //scrollView.ScrollBar.horizontal.position = v      // TODO: recursive call crash !
+            }
+            onVerticalScrolled: {
+                var v = value/quickScintillaEditor.totalLines
+                console.log("VSCROLL "+value+" "+v)
+                scrollView.ScrollBar.vertical.position = v
+            }
+            onHorizontalRangeChanged: {
+                console.log("HRANGE "+max+" "+page+" "+quickScintillaEditor.totalColumns+" "+quickScintillaEditor.visibleColumns)
+                scrollView.ScrollBar.horizontal.size = page/quickScintillaEditor.totalColumns
+            }
+            onVerticalRangeChanged: {
+                console.log("VRANGE "+max+" "+page+" "+quickScintillaEditor.totalLines+" "+quickScintillaEditor.visibleLines)
+                scrollView.ScrollBar.vertical.size = page/quickScintillaEditor.totalLines
             }
         }
 
@@ -277,8 +308,8 @@ ApplicationWindow {
             anchors.right: parent.right
             opacity: 1
             orientation: Qt.Vertical
-            position: myScintillaEditor.firstVisibleLine/myScintillaEditor.totalLines
-            pageSize: myScintillaEditor.height/max(myScintillaEditor.logicalHeight,myScintillaEditor.height) // 0.5 //view.visibleArea.heightRatio
+            position: quickScintillaEditor.firstVisibleLine/quickScintillaEditor.totalLines
+            pageSize: quickScintillaEditor.height/max(quickScintillaEditor.logicalHeight,quickScintillaEditor.height) // 0.5 //view.visibleArea.heightRatio
         }
 
         SimpleScrollBar {
@@ -291,8 +322,8 @@ ApplicationWindow {
             y: scrollView.height-12 //-50
             opacity: 1
             orientation: Qt.Horizontal
-            position: myScintillaEditor.firstVisibleColumn/myScintillaEditor.totalColumns
-            pageSize: myScintillaEditor.width/max(myScintillaEditor.logicalWidth,myScintillaEditor.width) //0.25 //myScintillaEditor.widthRatio
+            position: quickScintillaEditor.firstVisibleColumn/quickScintillaEditor.totalColumns
+            pageSize: quickScintillaEditor.width/max(quickScintillaEditor.logicalWidth,quickScintillaEditor.width) //0.25 //quickScintillaEditor.widthRatio
         }
         */
    }
