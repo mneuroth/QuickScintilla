@@ -226,27 +226,36 @@ ApplicationWindow {
             target: scrollView.contentItem //.flickableItem //.ScrollBar.vertial
 
             onContentXChanged: {
-                console.log("xchanged")
                 var delta = scrollView.contentItem.contentX - quickScintillaEditor.x
                 var deltaInColumns = parseInt(delta / quickScintillaEditor.charWidth,10)
+                console.log("xchanged delta="+delta+" deltaCol="+deltaInColumns+" shift="+deltaInColumns*quickScintillaEditor.charWidth+" contentX="+scrollView.contentItem.contentX)
                 if(delta > quickScintillaEditor.charWidth) {
                     console.log("p1")
-                    // disable repaint: https://stackoverflow.com/questions/46095768/how-to-disable-update-on-a-qquickitem
-                    quickScintillaEditor.enableUpdate(false);
-                    quickScintillaEditor.x = quickScintillaEditor.x + deltaInColumns*quickScintillaEditor.charWidth    // TODO --> bewirkt geometry changed !!!
-                    quickScintillaEditor.scrollColumn(deltaInColumns)
-                    quickScintillaEditor.enableUpdate(true)
+                    if(!scrollView.actionFromKeyboard)
+                    {
+                        // disable repaint: https://stackoverflow.com/questions/46095768/how-to-disable-update-on-a-qquickitem
+                        quickScintillaEditor.enableUpdate(false);
+                        quickScintillaEditor.x = quickScintillaEditor.x // + deltaInColumns*quickScintillaEditor.charWidth    // TODO --> bewirkt geometry changed !!!
+                        quickScintillaEditor.scrollColumn(deltaInColumns)
+                        quickScintillaEditor.enableUpdate(true)
+                    }
                 }
                 else if(-deltaInColumns > quickScintillaEditor.charWidth) {
                     console.log("p2")
-                    quickScintillaEditor.enableUpdate(false);
-                    quickScintillaEditor.x = quickScintillaEditor.x + deltaInColumns*quickScintillaEditor.charWidth      // deltaInColumns is < 0
-                    if(quickScintillaEditor.x < 0)
+                    if(!scrollView.actionFromKeyboard)
                     {
-                        quickScintillaEditor.x = 0
+                        quickScintillaEditor.enableUpdate(false);
+                        quickScintillaEditor.x = quickScintillaEditor.x + deltaInColumns*quickScintillaEditor.charWidth      // deltaInColumns is < 0
+                        if(quickScintillaEditor.x < 0)
+                        {
+                            quickScintillaEditor.x = 0
+                        }
+                        quickScintillaEditor.scrollColumn(deltaInColumns)   // deltaInColumns is < 0
+                        quickScintillaEditor.enableUpdate(true)
                     }
-                    quickScintillaEditor.scrollColumn(deltaInColumns)   // deltaInColumns is < 0
-                    quickScintillaEditor.enableUpdate(true)
+                }
+                else {
+                    console.log("p3")
                 }
             }
             onContentYChanged: {
@@ -272,29 +281,44 @@ ApplicationWindow {
                     quickScintillaEditor.scrollRow(deltaInLines) // -1 * -1
                     quickScintillaEditor.enableUpdate(true)
                 }
+                else {
+                    console.log("P3")
+                }
             }
         }
 
+        // process signals from the quick scintilla editor control triggered by keyboard interactions
         Connections {
             target: quickScintillaEditor
 
+            // this signal is emited if the scintilla editor contol scrolls, because of a keyboard interaction
+            //   --> update the scrollview appropriate: move editor control to right position and
+            //       update content area and position of scroll view (results in updating the scrollbar)
             onHorizontalScrolled: {
-                var v = value/quickScintillaEditor.charWidth/quickScintillaEditor.totalColumns
-                console.log("HSCROLL "+value+" new="+v)
-                //scrollView.ScrollBar.horizontal.position = v      // TODO: recursive call crash !
+                // value from scintilla in pixel !
+                //var v = value/quickScintillaEditor.logicalWidth // /quickScintillaEditor.charWidth/quickScintillaEditor.totalColumns
+                //console.log("HSCROLL "+value+" new="+v+" firstVisibleCol="+quickScintillaEditor.firstVisibleColumn+" charWidth="+quickScintillaEditor.charWidth+" editor.x="+quickScintillaEditor.x+" logicalWidth="+quickScintillaEditor.logicalWidth)
+            //    scrollView.actionFromKeyboard = true
+                //bad: scrollView.ScrollBar.horizontal.position = v      // TODO: recursive call crash !
+                quickScintillaEditor.x = value              // order of calls is very important: first update child and then the container !
+                scrollView.contentItem.contentX = value
+            //    scrollView.actionFromKeyboard = false
             }
             onVerticalScrolled: {
-                var v = value/quickScintillaEditor.totalLines
-                console.log("VSCROLL "+value+" "+v)
-                scrollView.ScrollBar.vertical.position = v
+                // value from scintilla in lines !
+                //var v = value/quickScintillaEditor.totalLines
+                //console.log("VSCROLL "+value+" "+value+" new="+v)
+                //bad: scrollView.ScrollBar.vertical.position = v
+                quickScintillaEditor.y = value*quickScintillaEditor.charHeight
+                scrollView.contentItem.contentY = value*quickScintillaEditor.charHeight
             }
             onHorizontalRangeChanged: {
-                console.log("HRANGE "+max+" "+page+" "+quickScintillaEditor.totalColumns+" "+quickScintillaEditor.visibleColumns)
-                scrollView.ScrollBar.horizontal.size = page/quickScintillaEditor.totalColumns
+                //console.log("HRANGE max="+max+" page="+page+" totalCol="+quickScintillaEditor.totalColumns+" visibleCol="+quickScintillaEditor.visibleColumns+" firstVisibleCol="+quickScintillaEditor.firstVisibleColumn)
+                //not needed: scrollView.ScrollBar.horizontal.size = page/quickScintillaEditor.totalColumns
             }
             onVerticalRangeChanged: {
-                console.log("VRANGE "+max+" "+page+" "+quickScintillaEditor.totalLines+" "+quickScintillaEditor.visibleLines)
-                scrollView.ScrollBar.vertical.size = page/quickScintillaEditor.totalLines
+                //console.log("VRANGE max="+max+" page="+page+" totalLines="+quickScintillaEditor.totalLines+" visibleLines="+quickScintillaEditor.visibleLines)
+                //not needed: scrollView.ScrollBar.vertical.size = page/quickScintillaEditor.totalLines
             }
         }
 

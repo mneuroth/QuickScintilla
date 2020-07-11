@@ -1086,7 +1086,7 @@ int ScintillaEditBase::getTotalLines() const
 
 int ScintillaEditBase::getFirstVisibleColumn() const
 {
-    int offset = send(SCI_GETXOFFSET);
+    int offset = send(SCI_GETXOFFSET) / getCharWidth();
     return offset;
 }
 
@@ -1144,6 +1144,7 @@ void ScintillaEditBase::UpdateQuickView()
         emit logicalHeightChanged();
     }
 
+// TODO: hier nur signal senden, wenn wirklich notwendig, d. h. falls gescrollt wurde ...
     emit firstVisibleLineChanged();
     emit firstVisibleColumnChanged();
 }
