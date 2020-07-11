@@ -228,8 +228,8 @@ ApplicationWindow {
             onContentXChanged: {
                 var delta = scrollView.contentItem.contentX - quickScintillaEditor.x
                 var deltaInColumns = parseInt(delta / quickScintillaEditor.charWidth,10)
-                console.log("xchanged delta="+delta+" deltaCol="+deltaInColumns+" shift="+deltaInColumns*quickScintillaEditor.charWidth+" contentX="+scrollView.contentItem.contentX)
-                if(delta > quickScintillaEditor.charWidth) {
+                console.log("xchanged delta="+delta+" deltaCol="+deltaInColumns+" shift="+deltaInColumns*quickScintillaEditor.charWidth+" contentX="+scrollView.contentItem.contentX+" scintillaX="+quickScintillaEditor.x)
+                if(delta >= quickScintillaEditor.charWidth) {
                     console.log("p1")
                     if(!scrollView.actionFromKeyboard)
                     {
@@ -240,7 +240,7 @@ ApplicationWindow {
                         quickScintillaEditor.enableUpdate(true)
                     }
                 }
-                else if(-deltaInColumns > quickScintillaEditor.charWidth) {
+                else if(-delta >= quickScintillaEditor.charWidth) {
                     console.log("p2")
                     if(!scrollView.actionFromKeyboard)
                     {
@@ -262,7 +262,7 @@ ApplicationWindow {
                 console.log("YCHANGED")
                 var delta = scrollView.contentItem.contentY - quickScintillaEditor.y
                 var deltaInLines = parseInt(delta / quickScintillaEditor.charHeight,10)
-                if(delta > quickScintillaEditor.charHeight) {
+                if(delta >= quickScintillaEditor.charHeight) {
                     console.log("P1")
                     // disable repaint: https://stackoverflow.com/questions/46095768/how-to-disable-update-on-a-qquickitem
                     quickScintillaEditor.enableUpdate(false);
@@ -270,7 +270,7 @@ ApplicationWindow {
                     quickScintillaEditor.scrollRow(deltaInLines)
                     quickScintillaEditor.enableUpdate(true)
                 }
-                else if(-delta > quickScintillaEditor.charHeight) {
+                else if(-delta >= quickScintillaEditor.charHeight) {
                     console.log("P2")
                     quickScintillaEditor.enableUpdate(false);
                     quickScintillaEditor.y = quickScintillaEditor.y + deltaInLines*quickScintillaEditor.charHeight
