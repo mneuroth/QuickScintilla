@@ -238,7 +238,11 @@ void SurfaceImpl::Release()
 
 bool SurfaceImpl::Initialised()
 {
-	return device != nullptr;
+#ifdef PLAT_QT_QML
+    return painter != nullptr;
+#else
+    return device != nullptr;
+#endif
 }
 
 void SurfaceImpl::PenColour(ColourDesired fore)
