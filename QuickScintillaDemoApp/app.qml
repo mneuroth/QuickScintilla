@@ -199,6 +199,8 @@ ApplicationWindow {
             implicitWidth: quickScintillaEditor.logicalWidth
             implicitHeight: quickScintillaEditor.logicalHeight
 
+            color: "lightgrey"
+
             // the QuickScintilla control
             ScintillaEditBase {
                 id: quickScintillaEditor
@@ -218,6 +220,49 @@ ApplicationWindow {
                 font.pointSize: 18
                 focus: true
                 text: "Welcome scintilla in the Qt QML/Quick world !\nLine 2\nLine 3\nLine 4\nLine 5\nLine 6\nLine 7\nLine 8\nLine 9\nLine 10\nLine 11\nLine 12\nLine 13\nLine 14\nLine 15\nLine 16\nLine 17\nlast line is here!\n"+parent.x+ " "+parent.y+" "+x+" "+y
+/*
+                MouseArea {
+                    id: mouseArea
+                    z: -1
+
+                    anchors.fill: parent
+                    cursorShape: Qt.PointingHandCursor
+                    acceptedButtons: Qt.LeftButton
+                    propagateComposedEvents: true
+
+                    onClicked: {
+                        console.log("CLICK mouseArea")
+                        mouse.accepted = false
+                    }
+                    onPressAndHold: {
+                        console.log("CLICKAndHold mouseArea")
+                        mouse.accepted = false
+                    }
+                }
+*/
+            }                       
+        }
+
+        Menu {
+            id: editMenu
+
+            MenuItem {
+                text: "Copy"
+                onTriggered: {
+                    console.log("Copy! "+quickScintillaEditor.visibleColumns)
+                }
+            }
+            MenuItem {
+                text: "Cut"
+                onTriggered: {
+                    console.log("Cut!")
+                }
+            }
+            MenuItem {
+                text: "Paste"
+                onTriggered: {
+                    console.log("Paste!")
+                }
             }
         }
 
@@ -290,6 +335,20 @@ ApplicationWindow {
         // process signals from the quick scintilla editor control triggered by keyboard interactions
         Connections {
             target: quickScintillaEditor
+
+            onShowContextMenu: {
+                console.log("CONTEXT MENU")
+                //editMenu.open()
+                editMenu.popup(pos)
+            }
+
+            onMarginClicked: {
+                console.log("MARGING CLICK !")
+            }
+
+            onTextAreaClicked: {
+                console.log("TextArea CLICK !")
+            }
 
             // this signal is emited if the scintilla editor contol scrolls, because of a keyboard interaction
             //   --> update the scrollview appropriate: move editor control to right position and

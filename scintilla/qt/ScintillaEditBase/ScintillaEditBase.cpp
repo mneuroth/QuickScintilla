@@ -55,6 +55,7 @@ ScintillaEditBase::ScintillaEditBase(QQuickItem/*QWidget*/ *parent)
 , enableUpdateFlag(true), logicalWidth(0), logicalHeight(0)
 #ifdef PLAT_QT_QML
 , dataInputMethodHints(Qt::ImhNone)
+, aLongTouchTimer(this)
 #endif
 , sqt(0), preeditPos(-1), wheelDelta(0)
 {
@@ -117,6 +118,13 @@ ScintillaEditBase::ScintillaEditBase(QQuickItem/*QWidget*/ *parent)
 	connect(sqt, SIGNAL(aboutToCopy(QMimeData *)),
 	        this, SIGNAL(aboutToCopy(QMimeData *)));
 
+#ifdef PLAT_QT_QML
+    connect(&aLongTouchTimer, SIGNAL(timeout()), this, SLOT(onLongTouch()));
+#endif
+
+    // show line numbers
+    send(SCI_SETMARGINWIDTHN,0,75);
+
     // TODO: performance optimizations... ?
     //setRenderTarget(QQuickPaintedItem::FramebufferObject);
 }
@@ -138,6 +146,8 @@ sptr_t ScintillaEditBase::sends(
 {
 	return sqt->WndProc(iMessage, wParam, (sptr_t)s);
 }
+
+#ifdef PLAT_QT_QML
 
 void ScintillaEditBase::scrollRow(int deltaLines)
 {
@@ -171,6 +181,13 @@ void ScintillaEditBase::enableUpdate(bool enable)
         update();
     }
 }
+
+void ScintillaEditBase::onLongTouch()
+{
+    emit showContextMenu(longTouchPoint);
+}
+
+#endif
 
 void ScintillaEditBase::scrollHorizontal(int value)
 {
@@ -447,7 +464,19 @@ void ScintillaEditBase::mousePressEvent(QMouseEvent *event)
 
 	if (event->button() == Qt::RightButton) {
 		sqt->RightButtonDownWithModifiers(pos, time.elapsed(), ModifiersOfKeyboard());
-	}
+
+#ifdef PLAT_QT_QML
+        Point pos = PointFromQPoint(event->globalPos());
+        Point pt = PointFromQPoint(event->pos());
+        if (!sqt->PointInSelection(pt)) {
+            sqt->SetEmptySelection(sqt->PositionFromLocation(pt));
+        }
+        if (sqt->ShouldDisplayPopup(pt)) {
+            emit showContextMenu(event->pos());
+            //sqt->ContextMenu(pos);
+        }
+#endif
+    }
 
 #ifdef PLAT_QT_QML
     setFocus(true);
@@ -825,8 +854,11 @@ QVariant ScintillaEditBase::inputMethodQuery(Qt::InputMethodQuery query) const
 	}
 }
 
+#ifdef PLAT_QT_QML
+
 void ScintillaEditBase::touchEvent(QTouchEvent *event)
 {
+qDebug() << "TouchEvent " << event->type() << " " << event << " " << event->touchPointStates() << endl;
     if( event->touchPointStates() == Qt::TouchPointPressed && event->touchPoints().count()>0 )
     {
         QTouchEvent::TouchPoint point = event->touchPoints().first();
@@ -838,9 +870,14 @@ void ScintillaEditBase::touchEvent(QTouchEvent *event)
         //sqt->ButtonDownWithModifiers(scintillaPoint, time.elapsed(), 0);       // --> enables mouse selection modus
         Sci::Position pos = sqt->PositionFromLocation(scintillaPoint);
         sqt->MovePositionTo(pos);
+
+        longTouchPoint = point.pos().toPoint();
+        aLongTouchTimer.start(1000);
     }
     else if( event->touchPointStates() == Qt::TouchPointReleased && event->touchPoints().count()>0 )
     {
+        aLongTouchTimer.stop();
+
         QTouchEvent::TouchPoint point = event->touchPoints().first();
         Point pos = PointFromQPoint(mouseMoved ? mousePressedPoint : point.pos().toPoint());
 
@@ -862,14 +899,22 @@ void ScintillaEditBase::touchEvent(QTouchEvent *event)
         }
 #endif
     }
+//    if( event->touchPointStates() == Qt::TouchPointStationary && event->touchPoints().count()>0 )
+//    {
+//        QTouchEvent::TouchPoint point = event->touchPoints().first();
+//        emit showContextMenu(point.pos().toPoint());
+//    }
     else if(event->touchPointStates() == Qt::TouchPointMoved && event->touchPoints().count()>0)
     {
+        aLongTouchTimer.stop();
     }
     else
     {
         QQuickPaintedItem::touchEvent(event);
     }
 }
+
+#endif
 
 void ScintillaEditBase::notifyParent(SCNotification scn)
 {
@@ -1104,7 +1149,8 @@ int ScintillaEditBase::getVisibleLines() const
 
 int ScintillaEditBase::getVisibleColumns() const
 {
-    int visibleWidth = sqt->GetTextRectangle().Width();
+    int marginWidth = send(SCI_GETMARGINWIDTHN);
+    int visibleWidth = sqt->GetTextRectangle().Width() - marginWidth;
     int count = visibleWidth / getCharWidth();
     return count;
 }

@@ -26,6 +26,7 @@
 
 #ifdef PLAT_QT_QML
 #include <QFont>
+#include <QTimer>
 #include <QQuickPaintedItem>
 #else
 #include <QAbstractScrollArea>
@@ -105,10 +106,12 @@ public:
 		uptr_t wParam = 0,
 		const char *s = 0) const;
 
+#ifdef PLAT_QT_QML
     Q_INVOKABLE void scrollRow(int deltaLines);
     Q_INVOKABLE void scrollColumn(int deltaColumns);
     Q_INVOKABLE void enableUpdate(bool enable);
     Q_INVOKABLE void debug();
+#endif
 
 public slots:
 	// Scroll events coming from GUI to be sent to Scintilla.
@@ -118,6 +121,10 @@ public slots:
 	// Emit Scintilla notifications as signals.
 	void notifyParent(SCNotification scn);
 	void event_command(uptr_t wParam, sptr_t lParam);
+
+#ifdef PLAT_QT_QML
+    void onLongTouch();
+#endif
 
 signals:
 	void horizontalScrolled(int value);
@@ -179,6 +186,7 @@ signals:
     void visibleLinesChanged();
     void visibleColumnsChanged();
     void inputMethodHintsChanged();
+    void showContextMenu(const QPoint & pos);
 #endif
 
 protected:
@@ -248,6 +256,8 @@ private:
     int logicalWidth;
     int logicalHeight;
     QFont aFont;
+    QPoint longTouchPoint;
+    QTimer aLongTouchTimer;
 #endif
 
 	Scintilla::ScintillaQt *sqt;
