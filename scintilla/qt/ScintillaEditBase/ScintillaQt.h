@@ -81,14 +81,18 @@ class ScintillaQt : public QObject, public ScintillaBase {
 
 public:
 #ifdef PLAT_QT_QML
-    explicit ScintillaQt(QQuickPaintedItem *parent);
+	explicit ScintillaQt(QQuickPaintedItem *parent);
+	void UpdateInfos(int winId);
+	QQuickPaintedItem * GetScrollArea() { return scrollArea; }
+    void selectCurrentWord();
 #else
-    explicit ScintillaQt(QAbstractScrollArea *parent);
+	explicit ScintillaQt(QAbstractScrollArea *parent);
 #endif
 	virtual ~ScintillaQt();
 
 signals:
-	void horizontalScrolled(int value);
+    void cursorPositionChanged();
+    void horizontalScrolled(int value);
 	void verticalScrolled(int value);
 	void horizontalRangeChanged(int max, int page);
 	void verticalRangeChanged(int max, int page);
@@ -114,7 +118,6 @@ private:
 	bool ValidCodePage(int codePage) const override;
 
 private:
-    //void DebugOutput(int value) override;
 	void ScrollText(Sci::Line linesToMove) override;
 	void SetVerticalScrollPos() override;
 	void SetHorizontalScrollPos() override;
@@ -149,20 +152,21 @@ private:
 
 	void CreateCallTipWindow(PRectangle rc) override;
 	void AddToPopUp(const char *label, int cmd = 0, bool enabled = true) override;
+public:
 	sptr_t WndProc(unsigned int iMessage, uptr_t wParam, sptr_t lParam) override;
 	sptr_t DefWndProc(unsigned int iMessage, uptr_t wParam, sptr_t lParam) override;
-
+private:
 	static sptr_t DirectFunction(sptr_t ptr,
 				     unsigned int iMessage, uptr_t wParam, sptr_t lParam);
 
 #ifdef PLAT_QT_QML
-    QPainter * GetPainter() { return currentPainter; }
+	QPainter * GetPainter() { return currentPainter; }
 #endif
 
 protected:
 
-    void PartialPaint(const PRectangle &rect);
-    void PartialPaintQml(const PRectangle & rect, QPainter *painter);
+	void PartialPaint(const PRectangle &rect);
+	void PartialPaintQml(const PRectangle & rect, QPainter *painter);
 
 	void DragEnter(const Point &point);
 	void DragMove(const Point &point);
@@ -174,9 +178,9 @@ protected:
 
 private:
 #ifdef PLAT_QT_QML
-    QQuickPaintedItem *scrollArea;
+	QQuickPaintedItem *scrollArea;      // is a ScintillaEditBase
 #else
-    QAbstractScrollArea *scrollArea;
+	QAbstractScrollArea *scrollArea;
 #endif
 
 	int vMax, hMax;   // Scroll bar maximums.
@@ -187,7 +191,7 @@ private:
 	int rectangularSelectionModifier;
 
 #ifdef PLAT_QT_QML
-    QPainter *currentPainter;  // temporary variable for paint() handling
+	QPainter *currentPainter;  // temporary variable for paint() handling
 #endif
 
 	friend class ::ScintillaEditBase;

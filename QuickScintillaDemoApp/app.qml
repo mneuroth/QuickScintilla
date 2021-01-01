@@ -160,15 +160,44 @@ ApplicationWindow {
         return v1 < v2 ? v2 : v1;
     }
 
+//    ScintillaEditBase {
+//        id: quickScintillaEditor
+
+//        anchors.top: lblFileName.bottom
+//        anchors.right: parent.right
+//        anchors.bottom: parent.bottom
+//        anchors.left: parent.left
+//        anchors.rightMargin: 5
+//        anchors.leftMargin: 5
+//        anchors.topMargin: 5
+//        anchors.bottomMargin: 5
+
+//        // position of the QuickScintilla controll will be changed in response of signals from the ScrollView
+//        x : 0
+//        y : 0
+
+//        Accessible.role: Accessible.EditableText
+
+//        //implicitWidth: 1600//1000
+//        //implicitHeight: 1800//3000
+//        font.family: "Courier New"  //*/ "Hack"
+//        font.pointSize: 18
+//        focus: true
+//        text: "Welcome scintilla in the Qt QML/Quick world !\nLine 2\nLine 3\nLine 4\nLine 5\nLine 6\nLine 7\nLine 8\nLine 9\nLine 10\nLine 11\nLine 12\nLine 13\nLine 14\nLine 15\nLine 16\nLine 17\nlast line is here!\n"+parent.x+ " "+parent.y+" "+x+" "+y
+//    }
+
     // Use Scrollview to handle ScrollBars for QuickScintilla control.
     // Scrollbar uses Rectangle as flickable item which has the implicitSize of the QuickScintilla control
     // (implicitSize is the maximun size needed to show the full content of the QuickScintilla control).
     // The QuickScintilla controll will be placed at the currently visible viewport of the ScrollView.
+    //Flickable {
     ScrollView {
         id: scrollView
         focus: true
         clip: true
         //focusPolicy: Qt.StrongFocus
+        //filtersChildMouseEvents: false
+
 
         property alias quickScintillaEditor: quickScintillaEditor
         //property Flickable flickableItem: flickableItem
@@ -196,14 +225,20 @@ ApplicationWindow {
 
             anchors.fill: parent
 
-            implicitWidth: quickScintillaEditor.logicalWidth
-            implicitHeight: quickScintillaEditor.logicalHeight
+//            // TODO dies macht die Probleme mit den verschwindenden Moue Events !!! width/height ok, logicalWidth/logicalHeight oder width+1/height nicht ok ?
+            implicitWidth: quickScintillaEditor.logicalWidth //quickScintillaEditor.width+200 //500 //quickScintillaEditor.logicalWidth
+            implicitHeight: quickScintillaEditor.logicalHeight //quickScintillaEditor.height+500 //800 //quickScintillaEditor.logicalHeight
 
-            color: "lightgrey"
+//            //color: "lightgrey"
 
             // the QuickScintilla control
+            //TextEdit {
             ScintillaEditBase {
                 id: quickScintillaEditor
+
+                // for TextTedit tests
+         //       mouseSelectionMode: TextEdit.SelectCharacters
+         //       selectByMouse: true
 
                 width: scrollView.availableWidth //+ 2*quickScintillaEditor.charHeight
                 height: scrollView.availableHeight //+ 2*quickScintillaEditor.charWidth
@@ -214,12 +249,12 @@ ApplicationWindow {
 
                 Accessible.role: Accessible.EditableText
 
-                //implicitWidth: 1600//1000
-                //implicitHeight: 1800//3000
+//                implicitWidth: quickScintillaEditor.logicalWidth // 1600//1000
+//                implicitHeight: quickScintillaEditor.logicalHeight //1800//3000
                 font.family: "Courier New"  //*/ "Hack"
                 font.pointSize: 18
                 focus: true
-                text: "Welcome scintilla in the Qt QML/Quick world !\nLine 2\nLine 3\nLine 4\nLine 5\nLine 6\nLine 7\nLine 8\nLine 9\nLine 10\nLine 11\nLine 12\nLine 13\nLine 14\nLine 15\nLine 16\nLine 17\nlast line is here!\n"+parent.x+ " "+parent.y+" "+x+" "+y
+                text: "Welcome scintilla in the Qt QML/Quick world !\nLine 2 for while if else blub done\nLine 3\nLine 4\nLine 5\nLine 6\nLine 7\nLine 8\nLine 9\nLine 10\nLine 11\nLine 12\nLine 13\nLine 14\nLine 15\nLine 16\nLine 17\nlast line is here!\n"+parent.x+ " "+parent.y+" "+x+" "+y
 /*
                 MouseArea {
                     id: mouseArea
@@ -238,9 +273,12 @@ ApplicationWindow {
                         console.log("CLICKAndHold mouseArea")
                         mouse.accepted = false
                     }
+                    onPositionChanged: {
+                        console.log("position changed")
+                    }
                 }
 */
-            }                       
+            }
         }
 
         Menu {
@@ -273,9 +311,9 @@ ApplicationWindow {
             onContentXChanged: {
                 var delta = scrollView.contentItem.contentX - quickScintillaEditor.x
                 var deltaInColumns = parseInt(delta / quickScintillaEditor.charWidth,10)
-                console.log("xchanged delta="+delta+" deltaCol="+deltaInColumns+" shift="+deltaInColumns*quickScintillaEditor.charWidth+" contentX="+scrollView.contentItem.contentX+" scintillaX="+quickScintillaEditor.x)
+                //console.log("xchanged delta="+delta+" deltaCol="+deltaInColumns+" shift="+deltaInColumns*quickScintillaEditor.charWidth+" contentX="+scrollView.contentItem.contentX+" scintillaX="+quickScintillaEditor.x)
                 if(delta >= quickScintillaEditor.charWidth) {
-                    console.log("p1")
+                    //console.log("p1")
                     if(!scrollView.actionFromKeyboard)
                     {
                         // disable repaint: https://stackoverflow.com/questions/46095768/how-to-disable-update-on-a-qquickitem
@@ -286,7 +324,7 @@ ApplicationWindow {
                     }
                 }
                 else if(-delta >= quickScintillaEditor.charWidth) {
-                    console.log("p2")
+                    //console.log("p2")
                     if(!scrollView.actionFromKeyboard)
                     {
                         quickScintillaEditor.enableUpdate(false);
@@ -300,15 +338,15 @@ ApplicationWindow {
                     }
                 }
                 else {
-                    console.log("p3")
+                    //console.log("p3")
                 }
             }
             onContentYChanged: {
-                console.log("YCHANGED")
+                //console.log("YCHANGED")
                 var delta = scrollView.contentItem.contentY - quickScintillaEditor.y
                 var deltaInLines = parseInt(delta / quickScintillaEditor.charHeight,10)
                 if(delta >= quickScintillaEditor.charHeight) {
-                    console.log("P1")
+                    //console.log("P1")
                     // disable repaint: https://stackoverflow.com/questions/46095768/how-to-disable-update-on-a-qquickitem
                     quickScintillaEditor.enableUpdate(false);
                     quickScintillaEditor.y = quickScintillaEditor.y + deltaInLines*quickScintillaEditor.charHeight    // TODO --> bewirkt geometry changed !!!
@@ -316,7 +354,7 @@ ApplicationWindow {
                     quickScintillaEditor.enableUpdate(true)
                 }
                 else if(-delta >= quickScintillaEditor.charHeight) {
-                    console.log("P2")
+                    //console.log("P2")
                     quickScintillaEditor.enableUpdate(false);
                     quickScintillaEditor.y = quickScintillaEditor.y + deltaInLines*quickScintillaEditor.charHeight
                     if(quickScintillaEditor.y < 0)
@@ -327,11 +365,20 @@ ApplicationWindow {
                     quickScintillaEditor.enableUpdate(true)
                 }
                 else {
-                    console.log("P3")
+                    //console.log("P3")
                 }
             }
         }
 
+/*
+        Connections {
+            target: editorFrame
+
+            onMouseMoved: {
+                console.log("Mouse Move")
+            }
+        }
+*/
         // process signals from the quick scintilla editor control triggered by keyboard interactions
         Connections {
             target: quickScintillaEditor
@@ -342,6 +389,11 @@ ApplicationWindow {
                 editMenu.popup(pos)
             }
 
+            onDoubleClick: {
+                console.log("double click !")
+            }
+
+/*
             onMarginClicked: {
                 console.log("MARGING CLICK !")
             }
@@ -349,7 +401,7 @@ ApplicationWindow {
             onTextAreaClicked: {
                 console.log("TextArea CLICK !")
             }
-
+*/
             // this signal is emited if the scintilla editor contol scrolls, because of a keyboard interaction
             //   --> update the scrollview appropriate: move editor control to right position and
             //       update content area and position of scroll view (results in updating the scrollbar)

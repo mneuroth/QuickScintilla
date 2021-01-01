@@ -60,13 +60,22 @@ inline PRectangle PRectFromQRect(QRect qr)
 #ifdef PLAT_QT_QML
 inline PRectangle PRectFromQRectF(QRectF qr)
 {
-    return PRectangle(qr.x(), qr.y(), qr.x() + qr.width(), qr.y() + qr.height());
+	return PRectangle(qr.x(), qr.y(), qr.x() + qr.width(), qr.y() + qr.height());
 }
 #endif
 
 inline Point PointFromQPoint(QPoint qp)
 {
 	return Point(qp.x(), qp.y());
+}
+
+inline Point PointFromQPointF(QPointF qp)
+{
+    return Point(qp.x(), qp.y());
+}
+
+constexpr PRectangle RectangleInset(PRectangle rc, XYPOSITION delta) noexcept {
+	return PRectangle(rc.left + delta, rc.top + delta, rc.right - delta, rc.bottom - delta);
 }
 
 class SurfaceImpl : public Surface {
@@ -87,7 +96,8 @@ public:
 	SurfaceImpl();
 	virtual ~SurfaceImpl();
 
-    void Init(WindowID wid, PainterID pid, bool flag) override;
+	void Init(bool signatureFlag, PainterID pid) override;
+	void Init(WindowID wid) override;
 	void Init(SurfaceID sid, WindowID wid) override;
 	void InitPixMap(int width, int height,
 		Surface *surface, WindowID wid) override;
