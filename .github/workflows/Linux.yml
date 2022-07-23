@@ -47,8 +47,11 @@ jobs:
         ls -lrt
         qmake -r QuickScintilla.pro
         ls -lrt
-        make
+        make -j 4
         ls -lrt
+        ls -lrt scintilla
+        ls -lrt QuickScintillaDemoApp
+        ls -lrt scintilla/bin-x86
 
   linux_build_6_3_1:
 
@@ -71,7 +74,7 @@ jobs:
         # Whether or not to install Qt dependencies on Linux
         install-deps: 'true'
         # Additional Qt modules to install
-        #modules: 'qtscript' # qtcharts, qtdatavis3d, qtpurchasing, qtvirtualkeyboard, qtwebengine, qtnetworkauth, qtwebglplugin, qtscript, debug_info, qtscripttools
+        modules: 'core5compat' # qtscript, qtcharts, qtdatavis3d, qtpurchasing, qtvirtualkeyboard, qtwebengine, qtnetworkauth, qtwebglplugin, qtscript, debug_info, qtscripttools
         # Force a Qt mirror in case the default is not working
         #mirror: # optional
         # Whether or not to actually download Qt
@@ -89,5 +92,8 @@ jobs:
         ls -lrt
         qmake -r QuickScintilla.pro
         ls -lrt
-        make
+        make -j 4
         ls -lrt
+        ls -lrt scintilla
+        ls -lrt QuickScintillaDemoApp
+        ls -lrt scintilla/bin-x86
