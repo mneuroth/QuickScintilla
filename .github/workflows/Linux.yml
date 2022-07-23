@@ -54,7 +54,7 @@ jobs:
         ls -lrt QuickScintillaDemoApp
         ls -lrt scintilla/bin-x86
 
-  linux_build_6_2_4:
+  linux_build_6_2_2:
 
     runs-on: ubuntu-latest
 
@@ -65,7 +65,7 @@ jobs:
         # Directory to install Qt
         dir: # optional
         # Version of Qt to install
-        version: 6.2.4
+        version: 6.2.2
         # Host platform
         host: # optional
         # Target platform for build
