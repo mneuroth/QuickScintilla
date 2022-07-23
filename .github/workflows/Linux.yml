@@ -52,8 +52,9 @@ jobs:
         ls -lrt scintilla
         ls -lrt QuickScintillaDemoApp
         ls -lrt scintilla/bin-x86
+        ls -lrt scintilla/bin
 
-  linux_build_6_3_1:
+  linux_build_6_2_4:
 
     runs-on: ubuntu-latest
 
@@ -64,7 +65,7 @@ jobs:
         # Directory to install Qt
         dir: # optional
         # Version of Qt to install
-        version: '6.3.1'
+        version: '6.2.4'
         # Host platform
         host: # optional
         # Target platform for build
@@ -97,3 +98,50 @@ jobs:
         ls -lrt scintilla
         ls -lrt QuickScintillaDemoApp
         ls -lrt scintilla/bin-x86
+        ls -lrt scintilla/bin
+
+  linux_build_6_3_0:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: jurplel/install-qt-action@v2
+      with:
+        # Directory to install Qt
+        dir: # optional
+        # Version of Qt to install
+        version: '6.3.0'
+        # Host platform
+        host: # optional
+        # Target platform for build
+        target: 'desktop'
+        # Architecture for Windows/Android
+        arch: # optional
+        # Whether or not to install Qt dependencies on Linux
+        install-deps: 'true'
+        # Additional Qt modules to install
+        modules: 'core5compat' # qtscript, qtcharts, qtdatavis3d, qtpurchasing, qtvirtualkeyboard, qtwebengine, qtnetworkauth, qtwebglplugin, qtscript, debug_info, qtscripttools
+        # Force a Qt mirror in case the default is not working
+        #mirror: # optional
+        # Whether or not to actually download Qt
+        cached: # optional, default is false
+        # Version of aqtinstall to use in case of issues
+        aqtversion: # optional, default is ==0.8
+        # Version of py7zr to use in case of issues
+        py7zrversion: # optional, default is ==0.6
+        # Any extra arguments to append to the back
+        extra: # optional
+    - name: Install Qt and compile
+      run: |
+        #sudo apt-get install libgtk-3-dev
+        pwd
+        ls -lrt
+        qmake -r QuickScintilla.pro
+        ls -lrt
+        make -j 4
+        ls -lrt
+        ls -lrt scintilla
+        ls -lrt QuickScintillaDemoApp
+        ls -lrt scintilla/bin-x86
+        ls -lrt scintilla/bin
