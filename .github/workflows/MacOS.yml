@@ -54,7 +54,7 @@ jobs:
         ls -lrt scintilla/bin-x86
        
   
-  macos_6_13_1_build:
+  macos_6_3_1_build:
 
     runs-on: macos-latest
 
