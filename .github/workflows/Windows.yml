@@ -81,7 +81,7 @@ jobs:
         # Target platform for build
         target: 'desktop'
         # Architecture for Windows/Android
-        arch: 'win64_msvc2017_64'
+        arch: 'win64_msvc2019_64'
         # Whether or not to install Qt dependencies on Linux
         install-deps: 'true'
         # Additional Qt modules to install
@@ -96,12 +96,6 @@ jobs:
         py7zrversion: # optional, default is ==0.6
         # Any extra arguments to append to the back
         extra: # optional
-        #mirror: 'http://mirrors.ocf.berkeley.edu/qt/'
-        #setup-python: 'true'
-        #tools-only: 'false'
-        #aqtversion: '==0.10.0'
-        #py7zrversion: '==0.11.0'
-        #extra: '--external 7z'
         tools: 'tools_ifw,4.2.0-0-202111080926,qt.tools.ifw.42'
     - name: Install 7Zip PowerShell Module
       shell: powershell
