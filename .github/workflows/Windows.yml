@@ -29,7 +29,7 @@ jobs:
         # Target platform for build
         target: 'desktop'
         # Architecture for Windows/Android
-        arch: 'win64_mingw73'
+        arch: 'win64_mingw81'
         # Whether or not to install Qt dependencies on Linux
         install-deps: 'true'
         # Additional Qt modules to install
@@ -54,6 +54,8 @@ jobs:
     - name: Install Qt and compile
       run: |
         dir
+        d:
+        dir
         gcc -v
         qmake -r QuickScintilla.pro
         dir
@@ -68,7 +70,7 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - uses: ilammy/msvc-dev-cmd@v1
     - uses: jurplel/install-qt-action@v2
       with:
@@ -104,6 +106,8 @@ jobs:
       run: |
         cd 
         dir
+        d:
+        dir
         cl
         qmake -r QuickScintilla.pro
         dir
@@ -132,7 +136,7 @@ jobs:
         # Target platform for build
         target: 'desktop'
         # Architecture for Windows/Android
-        arch: 'win64_mingw73'
+        arch: 'win64_mingw112'
         # Whether or not to install Qt dependencies on Linux
         install-deps: 'true'
         # Additional Qt modules to install
@@ -156,6 +160,8 @@ jobs:
         tools: 'tools_ifw,4.2.0-0-202111080926,qt.tools.ifw.42'
     - name: Install Qt and compile
       run: |
+        dir
+        d:
         dir
         gcc -v
         qmake -r QuickScintilla.pro
@@ -212,6 +218,8 @@ jobs:
     - name: Install Qt and compile
       run: |
         cd 
+        dir
+        d:
         dir
         cl
         qmake -r QuickScintilla.pro
