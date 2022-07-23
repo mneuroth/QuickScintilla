@@ -184,7 +184,7 @@ jobs:
         # Target platform for build
         target: 'desktop'
         # Architecture for Windows/Android
-        arch: 'win64_msvc2017_64'
+        arch: 'win64_msvc2019_64'
         # Whether or not to install Qt dependencies on Linux
         install-deps: 'true'
         # Additional Qt modules to install
