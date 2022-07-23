@@ -8,7 +8,7 @@
 
 #include "applicationdata.h"
 
-#ifndef Q_OS_WIN
+#ifdef Q_OS_ANDROID
 #define _WITH_QDEBUG_REDIRECT
 #define _WITH_ADD_TO_LOG
 #endif
