@@ -1,8 +1,8 @@
 import Scintilla 1.0
-import QtQuick
-import QtQuick.Controls
-import QtQuick.Dialogs
-//import Qt.labs.platform
+import QtQuick 2.9
+import QtQuick.Controls 2.2
+import QtQuick.Dialogs 1.2
+//import Qt.labs.platform 1.1
 
 ApplicationWindow {
     id: myRoot
@@ -45,8 +45,10 @@ ApplicationWindow {
         anchors.leftMargin: 5
         text: "Load file"
         onClicked: {
+            //fileDialog.fileMode = FileDialog.OpenFile
             fileDialog.title = "Choose a file"
-            fileDialog.fileMode = FileDialog.OpenFile
+            fileDialog.selectExisting = true
+            fileDialog.openMode = true
             fileDialog.open()
         }
     }
@@ -60,8 +62,10 @@ ApplicationWindow {
         anchors.leftMargin: 5
         text: "Save file as"
         onClicked: {
+            //fileDialog.fileMode = FileDialog.SaveFile
             fileDialog.title = "Save a file"
-            fileDialog.fileMode = FileDialog.SaveFile
+            fileDialog.selectExisting = false
+            fileDialog.openMode = false
             fileDialog.open()
         }
     }
@@ -94,7 +98,7 @@ ApplicationWindow {
             //for Tests only: infoDialog.text = " "+scrollView.contentItem
             infoDialog.open()
             //for Tests only: readCurrentDoc("/sdcard/Texte/mgv_quick_qdebug.log")
-            ///*for Tests only: */quickScintillaEditor.text = applicationData.readLog()
+            /*for Tests only: */quickScintillaEditor.text = applicationData.readLog()
         }
     }
 
@@ -116,16 +120,21 @@ ApplicationWindow {
         visible: false
         modality: Qt.WindowModal
         title: "Choose a file"
-        //folder: "."
+        folder: "."
+
+        property bool openMode: true
+
+        selectExisting: true
+        selectMultiple: false
+        selectFolder: false
 
         onAccepted: {
-            var theFileUrl = currentFile // fileUrl
-            console.log("Accepted: " + /*currentFile*/theFileUrl)
-            if(fileDialog.fileMode == FileDialog.SaveFile) {
-                var ok = applicationData.writeFileContent(/*currentFile*/theFileUrl, quickScintillaEditor.text)
+            console.log("Accepted: " + /*currentFile*/fileUrl+" "+fileDialog.openMode)
+            /*if(fileDialog.fileMode === FileDialog.SaveFile)*/if(!fileDialog.openMode) {
+                var ok = applicationData.writeFileContent(/*currentFile*/fileUrl, quickScintillaEditor.text)
             }
             else {
-                readCurrentDoc(/*currentFile*/theFileUrl)
+                readCurrentDoc(/*currentFile*/fileUrl)
             }
             scrollView.focus = true
         }
@@ -139,7 +148,7 @@ ApplicationWindow {
         id: infoDialog
         visible: false
         title: qsTr("Info")
-        buttons: MessageDialog.Ok
+        standardButtons: StandardButton.Ok
         onAccepted: {
             console.log("Close info dialog")
             scrollView.focus = true
@@ -299,7 +308,7 @@ ApplicationWindow {
             // https://stackoverflow.com/questions/30359262/how-to-scroll-qml-scrollview-to-center
             target: scrollView.contentItem //.flickableItem //.ScrollBar.vertial
 
-            function onContentXChanged() {
+            onContentXChanged: {
                 var delta = scrollView.contentItem.contentX - quickScintillaEditor.x
                 var deltaInColumns = parseInt(delta / quickScintillaEditor.charWidth,10)
                 //console.log("xchanged delta="+delta+" deltaCol="+deltaInColumns+" shift="+deltaInColumns*quickScintillaEditor.charWidth+" contentX="+scrollView.contentItem.contentX+" scintillaX="+quickScintillaEditor.x)
@@ -332,7 +341,7 @@ ApplicationWindow {
                     //console.log("p3")
                 }
             }
-            function onContentYChanged() {
+            onContentYChanged: {
                 //console.log("YCHANGED")
                 var delta = scrollView.contentItem.contentY - quickScintillaEditor.y
                 var deltaInLines = parseInt(delta / quickScintillaEditor.charHeight,10)
@@ -374,13 +383,13 @@ ApplicationWindow {
         Connections {
             target: quickScintillaEditor
 
-            function onShowContextMenu() {
+            onShowContextMenu: {
                 console.log("CONTEXT MENU")
                 //editMenu.open()
                 editMenu.popup(pos)
             }
 
-            function onDoubleClick() {
+            onDoubleClick: {
                 console.log("double click !")
             }
 
@@ -396,7 +405,7 @@ ApplicationWindow {
             // this signal is emited if the scintilla editor contol scrolls, because of a keyboard interaction
             //   --> update the scrollview appropriate: move editor control to right position and
             //       update content area and position of scroll view (results in updating the scrollbar)
-            function onHorizontalScrolled(value) {
+            onHorizontalScrolled: {
                 // value from scintilla in pixel !
                 //var v = value/quickScintillaEditor.logicalWidth // /quickScintillaEditor.charWidth/quickScintillaEditor.totalColumns
                 //console.log("HSCROLL "+value+" new="+v+" firstVisibleCol="+quickScintillaEditor.firstVisibleColumn+" charWidth="+quickScintillaEditor.charWidth+" editor.x="+quickScintillaEditor.x+" logicalWidth="+quickScintillaEditor.logicalWidth)
@@ -406,7 +415,7 @@ ApplicationWindow {
                 scrollView.contentItem.contentX = value
             //    scrollView.actionFromKeyboard = false
             }
-            function onVerticalScrolled(value) {
+            onVerticalScrolled: {
                 // value from scintilla in lines !
                 //var v = value/quickScintillaEditor.totalLines
                 //console.log("VSCROLL "+value+" "+value+" new="+v)
@@ -414,11 +423,11 @@ ApplicationWindow {
                 quickScintillaEditor.y = value*quickScintillaEditor.charHeight
                 scrollView.contentItem.contentY = value*quickScintillaEditor.charHeight
             }
-            function onHorizontalRangeChanged() {
+            onHorizontalRangeChanged: {
                 //console.log("HRANGE max="+max+" page="+page+" totalCol="+quickScintillaEditor.totalColumns+" visibleCol="+quickScintillaEditor.visibleColumns+" firstVisibleCol="+quickScintillaEditor.firstVisibleColumn)
                 //not needed: scrollView.ScrollBar.horizontal.size = page/quickScintillaEditor.totalColumns
             }
-            function onVerticalRangeChanged() {
+            onVerticalRangeChanged: {
                 //console.log("VRANGE max="+max+" page="+page+" totalLines="+quickScintillaEditor.totalLines+" visibleLines="+quickScintillaEditor.visibleLines)
                 //not needed: scrollView.ScrollBar.vertical.size = page/quickScintillaEditor.totalLines
             }

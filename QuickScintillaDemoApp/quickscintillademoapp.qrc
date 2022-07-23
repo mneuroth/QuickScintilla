@@ -2,5 +2,6 @@
     <qresource prefix="/">
         <file>app.qml</file>
         <file>SimpleScrollBar.qml</file>
+        <file>app5.qml</file>
     </qresource>
 </RCC>

@@ -1,4 +1,5 @@
 QT += quick quickcontrols2 widgets printsupport
+greaterThan(QT_MAJOR_VERSION, 5): QT += core5compat
 
 CONFIG += c++1z
 
@@ -38,8 +39,7 @@ android {
 
 INCLUDEPATH += ../scintilla/qt/ScintillaEdit ../scintilla/qt/ScintillaEditBase ../scintilla/include ../scintilla/lexilla/src ../scintilla/lexlib
 
-LIBS += ../scintilla/bin-$${ARCH_PATH}/ScintillaEditBase.lib
-#LIBS += ../scintilla/bin/libScintillaEditBase.a
+LIBS += -L$$OUT_PWD/../scintilla/bin-$${ARCH_PATH}/ -lScintillaEditBase
 
 RESOURCES += quickscintillademoapp.qrc
 
@@ -61,3 +61,5 @@ DISTFILES += \
     android/res/values/libs.xml
 
 ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android
+
+ANDROID_ABIS = arm64-v8a

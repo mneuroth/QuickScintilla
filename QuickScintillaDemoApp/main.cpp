@@ -71,6 +71,12 @@ void PrivateMessageHandler(QtMsgType type, const QMessageLogContext & context, c
 //#include "SciLexer.h"
 //#include "Lexilla.h"
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+#define URL_FOR_QML "qrc:/app5.qml"
+#else
+#define URL_FOR_QML "qrc:/app.qml"
+#endif
+
 int main(int argc, char *argv[])
 {
     QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
@@ -99,7 +105,7 @@ int main(int argc, char *argv[])
     qmlRegisterType<ScintillaEditBase>("Scintilla", 1, 0, "ScintillaEditBase");
 
     QQmlApplicationEngine engine;
-    const QUrl url(QStringLiteral("qrc:/app.qml"));
+    const QUrl url(QStringLiteral(URL_FOR_QML));
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreated,
                      &app, [url](QObject *obj, const QUrl &objUrl) {
         if (!obj && url == objUrl)
