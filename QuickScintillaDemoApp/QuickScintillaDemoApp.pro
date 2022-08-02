@@ -3,11 +3,11 @@ greaterThan(QT_MAJOR_VERSION, 5): QT += core5compat
 
 CONFIG += c++1z
 
-HEADERS += applicationdata.h\
-           ../scintilla/lexilla/src/Lexilla.h
+HEADERS += applicationdata.h
+           #../scintilla/lexilla/src/Lexilla.h
 SOURCES += applicationdata.cpp\
-           ../scintilla/lexilla/src/Lexilla.cxx\
            main.cpp
+           #../scintilla/lexilla/src/Lexilla.cxx\
 
 ARCH_PATH = x86
 
@@ -37,7 +37,7 @@ android {
     }
 }
 
-INCLUDEPATH += ../scintilla/qt/ScintillaEdit ../scintilla/qt/ScintillaEditBase ../scintilla/include ../scintilla/lexilla/src ../scintilla/lexlib
+INCLUDEPATH += ../scintilla/qt/ScintillaEdit ../scintilla/qt/ScintillaEditBase ../scintilla/include ../scintilla/lexilla/src ../scintilla/lexlib ../scintilla/src
 
 LIBS += -L$$OUT_PWD/../scintilla/bin-$${ARCH_PATH}/ -lScintillaEditBase
 

@@ -81,7 +81,7 @@ int main(int argc, char *argv[])
 {
     QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 
-    Scintilla_LinkLexers();
+//TODO    Scintilla_LinkLexers();
     //LexillaSetDefault([](const char *name) {
     //	return CreateLexer(name);
     //});
