@@ -418,10 +418,10 @@ ApplicationWindow {
             onVerticalScrolled: {
                 // value from scintilla in lines !
                 //var v = value/quickScintillaEditor.totalLines
-                //console.log("VSCROLL "+value+" "+value+" new="+v)
+                //console.log("VSCROLL "+value+" total_lines="+quickScintillaEditor.totalLines+" char_height="+quickScintillaEditor.charHeight+" new="+v)
                 //bad: scrollView.ScrollBar.vertical.position = v
-                quickScintillaEditor.y = value*quickScintillaEditor.charHeight
-                scrollView.contentItem.contentY = value*quickScintillaEditor.charHeight
+                quickScintillaEditor.y = value //*quickScintillaEditor.charHeight           // Bugfix 13.8.2022, because of change in ScintillaEditBase.cpp in line #598: use QPoint instead of point
+                scrollView.contentItem.contentY = value //*quickScintillaEditor.charHeight
             }
             onHorizontalRangeChanged: {
                 //console.log("HRANGE max="+max+" page="+page+" totalCol="+quickScintillaEditor.totalColumns+" visibleCol="+quickScintillaEditor.visibleColumns+" firstVisibleCol="+quickScintillaEditor.firstVisibleColumn)

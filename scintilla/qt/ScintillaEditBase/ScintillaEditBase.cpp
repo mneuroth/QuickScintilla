@@ -601,7 +601,7 @@ void ScintillaEditBase::mouseReleaseEvent(QMouseEvent *event)
 
 	const sptr_t pos = send(SCI_POSITIONFROMPOINT, point.x(), point.y());
 	const sptr_t line = send(SCI_LINEFROMPOSITION, pos);
-	int modifiers = QApplication::keyboardModifiers();
+    int modifiers = QApplication::keyboardModifiers();
 
 	emit textAreaClicked(line, modifiers);
 	emit buttonReleased(event);
@@ -1010,7 +1010,7 @@ QVariant ScintillaEditBase::inputMethodQuery(Qt::InputMethodQuery query) const
             {
                 //Sci::Position curPos = sqt->CurrentPosition();
                 //return QVariant((int)curPos);
-                return QVariant(pos);
+                return QVariant((int)pos);
             }
         case Qt::ImTextAfterCursor:
         {
