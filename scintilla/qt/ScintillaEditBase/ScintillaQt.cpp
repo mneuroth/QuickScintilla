@@ -69,13 +69,13 @@ void ScintillaQt::selectCurrentWord()
     auto pos = CurrentPosition();
     auto max = pdoc->Length();
     auto startPos = pos;
-    while(startPos>=0 && std::iswalnum(pdoc->CharAt(startPos)))
+    while(startPos>=0 && std::isalnum(pdoc->CharAt(startPos)))
     {
         startPos--;
     }
     startPos++;
     auto endPos = pos;
-    while(endPos<max && std::iswalnum(pdoc->CharAt(endPos)))
+    while(endPos<max && std::isalnum(pdoc->CharAt(endPos)))
     {
         endPos++;
     }
