@@ -15,9 +15,9 @@ jobs:
 #    runs-on: windows-latest
 #
 #    steps:
-#    - uses: actions/checkout@v1
+#    - uses: actions/checkout@v3
 #    # see: https://github.com/jurplel/install-qt-action
-#    - uses: jurplel/install-qt-action@v2
+#    - uses: jurplel/install-qt-action@v3
 #      with:
 #        # Directory to install Qt
 #        dir: # optional
@@ -69,9 +69,9 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - uses: ilammy/msvc-dev-cmd@v1
-    - uses: jurplel/install-qt-action@v2
+    - uses: jurplel/install-qt-action@v3
       with:
         # Directory to install Qt
         dir: # optional
@@ -122,7 +122,7 @@ jobs:
 #    runs-on: windows-latest
 #
 #    steps:
-#    - uses: actions/checkout@v2
+#    - uses: actions/checkout@v3
 #    # see: https://github.com/jurplel/install-qt-action
 #    - uses: jurplel/install-qt-action@v3
 #      with:
@@ -176,9 +176,9 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v3
     - uses: ilammy/msvc-dev-cmd@v1
-    - uses: jurplel/install-qt-action@v2
+    - uses: jurplel/install-qt-action@v3
       with:
         # Directory to install Qt
         dir: # optional
@@ -234,9 +234,9 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v3
     - uses: ilammy/msvc-dev-cmd@v1
-    - uses: jurplel/install-qt-action@v2
+    - uses: jurplel/install-qt-action@v3
       with:
         # Directory to install Qt
         dir: # optional
