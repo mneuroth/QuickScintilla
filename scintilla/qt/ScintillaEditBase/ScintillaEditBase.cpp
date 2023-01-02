@@ -466,7 +466,7 @@ void ScintillaEditBase::keyPressEvent(QKeyEvent *event)
 
 	bool consumed = false;
 	bool added = sqt->KeyDownWithModifiers(static_cast<Keys>(key),
-					       ScintillaQt::ModifierFlags(shift, ctrl, alt),
+                           ModifierFlags(shift, ctrl, alt),
 					       &consumed) != 0;
 	if (!consumed)
 		consumed = added;
@@ -540,7 +540,7 @@ void ScintillaEditBase::mousePressEvent(QMouseEvent *event)
 		bool alt   = QApplication::keyboardModifiers() & Qt::AltModifier;
 #endif
 
-		sqt->ButtonDownWithModifiers(pos, time.elapsed(), ScintillaQt::ModifierFlags(shift, ctrl, alt));
+        sqt->ButtonDownWithModifiers(pos, time.elapsed(), ModifierFlags(shift, ctrl, alt));
 
 #ifdef PLAT_QT_QML
         cursorChangedUpdateMarker();
@@ -637,7 +637,7 @@ void ScintillaEditBase::mouseMoveEvent(QMouseEvent *event)
 	bool alt   = QApplication::keyboardModifiers() & Qt::AltModifier;
 #endif
 
-	const KeyMod modifiers = ScintillaQt::ModifierFlags(shift, ctrl, alt);
+    const KeyMod modifiers = ModifierFlags(shift, ctrl, alt);
 
 	sqt->ButtonMoveWithModifiers(pos, time.elapsed(), modifiers);
 
@@ -1348,7 +1348,7 @@ KeyMod ScintillaEditBase::ModifiersOfKeyboard()
 	const bool ctrl  = QApplication::keyboardModifiers() & Qt::ControlModifier;
 	const bool alt   = QApplication::keyboardModifiers() & Qt::AltModifier;
 
-	return ScintillaQt::ModifierFlags(shift, ctrl, alt);
+    return ModifierFlags(shift, ctrl, alt);
 }
 
 

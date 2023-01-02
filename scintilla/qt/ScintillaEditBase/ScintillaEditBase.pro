@@ -14,7 +14,7 @@ TEMPLATE = lib
 CONFIG += staticlib
 CONFIG += c++1z
 
-VERSION = 5.2.4
+VERSION = 5.3.2
 
 ARCH_PATH = x86
 
@@ -74,6 +74,7 @@ SOURCES += \
     ../../src/CharClassify.cxx \
     ../../src/CharacterType.cxx \
     ../../src/CharacterCategoryMap.cxx \
+    ../../src/ChangeHistory.cxx \
     ../../src/CellBuffer.cxx \
     ../../src/CaseFolder.cxx \
     ../../src/CaseConvert.cxx \
@@ -108,6 +109,7 @@ HEADERS  += \
     ../../src/CharClassify.h \
     ../../src/CharacterType.h \
     ../../src/CharacterCategoryMap.h \
+    ../../src/ChangeHistory.h \
     ../../src/CellBuffer.h \
     ../../src/CaseFolder.h \
     ../../src/CaseConvert.h \
@@ -121,7 +123,7 @@ OTHER_FILES +=
 
 INCLUDEPATH += ../../include ../../src
 
-DEFINES += SCINTILLA_QT_QML=1 MAKING_LIBRARY=1 SCI_LEXER=1 _CRT_SECURE_NO_DEPRECATE=1
+DEFINES += SCINTILLA_QT_QML=1 MAKING_LIBRARY=1 _CRT_SECURE_NO_DEPRECATE=1
 CONFIG(release, debug|release) {
     DEFINES += NDEBUG=1
 }
