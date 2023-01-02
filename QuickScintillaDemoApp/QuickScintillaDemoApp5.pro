@@ -2,10 +2,10 @@ QT += quick quickcontrols2 widgets printsupport
 
 CONFIG += c++1z
 
-HEADERS += applicationdata.h\
-           ../scintilla/lexilla/src/Lexilla.h
+HEADERS += applicationdata.h
+           #../scintilla/lexilla/src/Lexilla.h
 SOURCES += applicationdata.cpp\
-           ../scintilla/lexilla/src/Lexilla.cxx\
+           #../scintilla/lexilla/src/Lexilla.cxx\
            main.cpp
 
 ARCH_PATH = x86
@@ -36,9 +36,10 @@ android {
     }
 }
 
-INCLUDEPATH += ../scintilla/qt/ScintillaEdit ../scintilla/qt/ScintillaEditBase ../scintilla/include ../scintilla/lexilla/src ../scintilla/lexlib
+INCLUDEPATH += ../scintilla/qt/ScintillaEdit ../scintilla/qt/ScintillaEditBase ../scintilla/include ../scintilla/lexilla/src ../scintilla/lexlib ../scintilla/src
 
-LIBS += ../scintilla/bin-$${ARCH_PATH}/ScintillaEditBase.lib
+LIBS += -L$$OUT_PWD/../scintilla/bin-$${ARCH_PATH}/ -lScintillaEditBase
+#LIBS += ../scintilla/bin-$${ARCH_PATH}/ScintillaEditBase.lib
 #LIBS += ../scintilla/bin/libScintillaEditBase.a
 
 RESOURCES += quickscintillademoapp.qrc
