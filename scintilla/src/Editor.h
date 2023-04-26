@@ -698,7 +698,9 @@ private:
 public:
     AutoSurface(const Editor *ed, Scintilla::Internal::PainterID pid = nullptr, int _technology = -1) :
         surf(ed->CreateMeasurementSurface(pid, _technology))  {
+#ifdef PLAT_QT_QML
         surf->Init(false, pid);
+#endif
     }
     AutoSurface(SurfaceID sid, Editor *ed, std::optional<Scintilla::Technology> technology = {}) :
 		surf(ed->CreateDrawingSurface(sid, technology)) {

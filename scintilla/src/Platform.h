@@ -47,10 +47,12 @@
 #define PLAT_HAIKU 1
 
 #elif defined(SCINTILLA_QT)
+#undef PLAT_QT_QML
 #undef PLAT_QT
 #define PLAT_QT 1
 
 #elif defined(SCINTILLA_QT_QML)
+#undef PLAT_QT
 #undef PLAT_QT_QML
 #define PLAT_QT_QML 1
 

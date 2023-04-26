@@ -51,13 +51,14 @@ constexpr int IndicatorUnknown = IndicatorInput + 3;
 using namespace Scintilla;
 using namespace Scintilla::Internal;
 
-ScintillaEditBase::ScintillaEditBase(QQuickItem/*QWidget*/ *parent)
 #ifdef PLAT_QT_QML
+ScintillaEditBase::ScintillaEditBase(QQuickItem/*QWidget*/ *parent)
 : QQuickPaintedItem(parent)
+, enableUpdateFlag(true), logicalWidth(0), logicalHeight(0)
 #else
+ScintillaEditBase::ScintillaEditBase(QWidget *parent)
 : QAbstractScrollArea(parent)
 #endif
-, enableUpdateFlag(true), logicalWidth(0), logicalHeight(0)
 #ifdef PLAT_QT_QML
 , dataInputMethodHints(Qt::ImhNone)
 //, aLongTouchTimer(this)
