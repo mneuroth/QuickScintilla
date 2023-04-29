@@ -5751,7 +5751,13 @@ std::unique_ptr<Surface> Editor::CreateMeasurementSurface(Scintilla::Internal::P
 		return {};
 	}
 	std::unique_ptr<Surface> surf = Surface::Allocate(technology);
+
+#ifdef PLAT_QT_QML
     surf->Init(/*wMain.GetID()*/true, pid);
+#else
+	surf->Init(wMain.GetID());
+#endif
+
 	surf->SetMode(CurrentSurfaceMode());
 	return surf;
 }

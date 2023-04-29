@@ -116,7 +116,6 @@ HEADERS  += \
     ../../src/CallTip.h \
     ../../src/AutoComplete.h \
     ../../include/Scintilla.h \
-    ../../include/Platform.h \
     ../../include/ILexer.h \
 
 OTHER_FILES +=

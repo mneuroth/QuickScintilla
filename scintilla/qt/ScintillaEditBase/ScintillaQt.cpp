@@ -906,7 +906,7 @@ void ScintillaQt::PartialPaint(const PRectangle &rect)
 		scrollArea->update();
 	}
 
-	paintState = notPainting;
+	paintState = PaintState::notPainting;
 #else
 	PartialPaintQml(rect, nullptr);
 #endif	
